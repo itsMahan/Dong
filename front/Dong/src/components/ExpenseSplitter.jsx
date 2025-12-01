@@ -9,7 +9,7 @@ export default function ExpenseSplitter() {
     const [participantName, setParticipantName] = useState("");
     const [selectedParticipants, setSelectedParticipants] = useState([]);
     const [shares, setShares] = useState({});
-    const [paidShares, setPaidShares] = useState({}); // New state for paid shares
+    const [paidShares, setPaidShares] = useState({});
 
     const { theme } = useContext(ThemeContext);
 
@@ -25,13 +25,13 @@ export default function ExpenseSplitter() {
             setItemName("");
             setItemPrice("");
             setSelectedParticipants([]);
-            resetCalculations(); // Clear shares and paid status when items change
+            resetCalculations();
         }
     };
 
     const handleRemoveItem = (indexToRemove) => {
         setItems((prevItems) => prevItems.filter((_, index) => index !== indexToRemove));
-        resetCalculations(); // Clear shares and paid status when items change
+        resetCalculations();
     };
 
     const handleAddParticipant = (e) => {
@@ -39,22 +39,21 @@ export default function ExpenseSplitter() {
         if (participantName && !participants.includes(participantName)) {
             setParticipants([...participants, participantName]);
             setParticipantName("");
-            resetCalculations(); // Clear shares and paid status when participants change
+            resetCalculations();
         }
     };
 
     const handleRemoveParticipant = (participantToRemove) => {
-        // Remove from participants list
         setParticipants((prevParticipants) =>
             prevParticipants.filter((p) => p !== participantToRemove)
         );
 
-        // Remove from selectedParticipants for the current item being added
+
         setSelectedParticipants((prevSelected) =>
             prevSelected.filter((p) => p !== participantToRemove)
         );
 
-        // Update existing items to remove the participant if they were part of it
+
         setItems((prevItems) =>
             prevItems.map((item) => ({
                 ...item,
@@ -62,7 +61,7 @@ export default function ExpenseSplitter() {
             }))
         );
 
-        resetCalculations(); // Clear shares and paid status as they are now invalid
+        resetCalculations();
     };
 
     const handleToggleParticipant = (participant) => {
@@ -82,18 +81,16 @@ export default function ExpenseSplitter() {
 
     const calculateShares = () => {
         const newShares = {};
-        const initialPaidShares = {}; // Initialize paid status for all participants
+        const initialPaidShares = {};
         participants.forEach(p => {
             newShares[p] = 0;
-            initialPaidShares[p] = false; // Default to unpaid
+            initialPaidShares[p] = false;
         });
 
         items.forEach(item => {
-            // Only process items that have participants
             if (item.participants.length > 0) {
                 const sharePerPerson = item.price / item.participants.length;
                 item.participants.forEach(p => {
-                    // Ensure the participant still exists in the overall participants list
                     if (newShares.hasOwnProperty(p)) {
                         newShares[p] += sharePerPerson;
                     }
@@ -102,10 +99,10 @@ export default function ExpenseSplitter() {
         });
 
         setShares(newShares);
-        setPaidShares(initialPaidShares); // Reset paid status on recalculation
+        setPaidShares(initialPaidShares);
     };
 
-    // Adjusted input and button classes for a more mobile-friendly feel
+
     const inputClasses = `py-3 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
         theme === "light"
             ? "bg-white text-black placeholder-gray-500 border-gray-300"
@@ -123,12 +120,12 @@ export default function ExpenseSplitter() {
     }`;
 
     return (
-        <div className="flex flex-col gap-6 p-4 max-w-md mx-auto w-full"> {/* Narrower max-width for mobile feel */}
-            <h3 className="text-2xl font-bold text-center">Expense Splitter</h3>
+        <div className="flex flex-col gap-6 p-4 max-w-md mx-auto w-full">
+            <h3 className="text-2xl font-bold text-center cursor-default">Expense Splitter</h3>
 
             {/* Add Participants */}
-            <div className="bg-base-200 p-5 rounded-xl shadow-lg"> {/* Increased padding, rounded corners, shadow */}
-                <h4 className="text-xl font-semibold mb-3">Add Participants</h4>
+            <div className=" p-5 rounded-xl shadow-lg">
+                <h4 className="text-xl font-semibold mb-3 cursor-default">Add Participants</h4>
                 <form onSubmit={handleAddParticipant} className="flex flex-col sm:flex-row gap-3 mb-4">
                     <input
                         type="text"
@@ -163,8 +160,8 @@ export default function ExpenseSplitter() {
             </div>
 
             {/* Add Items */}
-            <div className="bg-base-200 p-5 rounded-xl shadow-lg">
-                <h4 className="text-xl font-semibold mb-3">Add Item</h4>
+            <div className="p-5 rounded-xl shadow-lg">
+                <h4 className="text-xl font-semibold mb-3 cursor-default">Add Item</h4>
                 <form onSubmit={handleAddItem} className="flex flex-col gap-4">
                     <input
                         type="text"
@@ -188,12 +185,12 @@ export default function ExpenseSplitter() {
                         <div className="flex flex-wrap gap-3">
                             <p className="font-medium w-full text-lg">Who shared this item?</p>
                             {participants.map((p) => (
-                                <label key={p} className="flex items-center gap-2 cursor-pointer text-base">
+                                <label key={p} className="bg=${theme} flex items-center gap-2 cursor-pointer text-${theme}">
                                     <input
                                         type="checkbox"
                                         checked={selectedParticipants.includes(p)}
                                         onChange={() => handleToggleParticipant(p)}
-                                        className="checkbox checkbox-md"
+                                        className="checkbox checkbox-md bg-white"
                                     />
                                     {p}
                                 </label>
@@ -204,10 +201,10 @@ export default function ExpenseSplitter() {
                 </form>
                 {items.length > 0 && (
                     <div className="mt-5">
-                        <p className="font-medium mb-2 text-lg">Added Items:</p>
+                        <p className="font-medium mb-2 text-lg cursor-default">Added Items:</p>
                         <ul className="list-none pl-0 space-y-3">
                             {items.map((item, index) => (
-                                <li key={index} className="flex items-center justify-between gap-2 bg-gray-100 dark:bg-gray-700 p-3 rounded-lg shadow-sm">
+                                <li key={index} className="flex items-center justify-between gap-2 bg-${theme} p-3 rounded-lg shadow-sm">
                                     <span className="text-base flex-grow">
                                         {item.name}: <span className="font-semibold">${item.price.toFixed(2)}</span> (Shared by: {item.participants.join(", ") || "None"})
                                     </span>
@@ -228,24 +225,24 @@ export default function ExpenseSplitter() {
 
             {/* Calculate Shares */}
             {items.length > 0 && participants.length > 0 && (
-                <div className="bg-base-200 p-5 rounded-xl shadow-lg">
+                <div className="bg-${theme} p-5 rounded-xl shadow-lg">
                     <button onClick={calculateShares} className={`${buttonClasses} w-full mb-4`}>
                         Calculate Shares
                     </button>
                     {Object.keys(shares).length > 0 && (
                         <div className="mt-4">
-                            <h4 className="text-xl font-semibold mb-3">Individual Shares:</h4>
+                            <h4 className="text-xl font-semibold mb-3 cursor-default">Individual Shares:</h4>
                             <ul className="list-none pl-0 space-y-3">
                                 {Object.entries(shares).map(([p, amount]) => (
-                                    <li key={p} className="flex items-center gap-3 bg-gray-100 dark:bg-gray-700 p-3 rounded-lg shadow-sm">
+                                    <li key={p} className="flex items-center gap-3 bg-${theme} p-3 rounded-lg shadow-sm">
                                         <label className="flex items-center gap-2 cursor-pointer flex-grow">
                                             <input
                                                 type="checkbox"
                                                 checked={!!paidShares[p]}
                                                 onChange={() => handleTogglePaid(p)}
-                                                className="checkbox checkbox-md"
+                                                className="bg-white checkbox checkbox-md"
                                             />
-                                            <span className={`${paidShares[p] ? "line-through text-gray-500 dark:text-gray-400" : "text-black dark:text-white"} text-base font-medium`}>
+                                            <span className={`${paidShares[p] ? `line-through text-${theme}` : `text-${theme}`} text-base font-medium`}>
                                                 {p}: <span className="font-semibold">${amount.toFixed(2)}</span>
                                             </span>
                                         </label>
