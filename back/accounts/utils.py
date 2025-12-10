@@ -27,11 +27,27 @@ def send_otp_code(phone_number):
         print(e)
 
 
+def can_request_otp(email):
+    """2 minuet intervals"""
+    try:
+        user = User.objects.get(email=email)
+        recent_otp = OtpCode.objects.filter(
+            user = user,
+            created_at__gte = timezone.now() - timedelta(minutes=2)
+        ).exists()
+        return not recent_otp
+    except User.DoesNotExist:
+        return True
+
+
 def send_otp_code_via_email(email):
+    if not can_request_otp(email):
+        return False
+
     subject = 'your Dong app verification code'
     code = random.randint(1000, 9999)
     message = f'{code}کد تایید دنگ: '
-    email_from = settings.EMAIL_HOST
+    email_from = settings.EMAIL_HOST_USER
     try:
         send_mail(subject, message, email_from, [email])
         user = User.objects.get(email=email)

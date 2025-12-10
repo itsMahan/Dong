@@ -37,6 +37,24 @@ class ResendOtpSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
 
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=4)
+    new_password = serializers.CharField(write_only=True)
+    new_password2 = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        """چک کردن یکسان بودن رمزها"""
+        if attrs['new_password'] != attrs['new_password2']:
+            raise serializers.ValidationError({
+                'new_password': "Passwords don't match"
+            })
+        return attrs
+
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
