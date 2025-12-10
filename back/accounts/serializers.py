@@ -28,9 +28,13 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         return user
 
 
-class VerifyAccountSerializer(serializers.Serializer):
+class VerifyOtpSerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField()
+
+
+class ResendOtpSerializer(serializers.Serializer):
+    email = serializers.EmailField()
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
