@@ -1,26 +1,50 @@
-import React, { useState } from 'react';
-import Login from './Login';
-import Signup from './SignUp';
+import React, { useState } from "react";
+import Login from "./Login.jsx";
+import Signup from "./SignUp.jsx";
+import VerificationPage from "./VerificationPage.jsx";
 
 export default function AuthPage({ onLogin }) {
-    const [showLogin, setShowLogin] = useState(true); // State to toggle between Login and Signup
+  const [currentView, setCurrentView] = useState("login");
+  const [signupEmail, setSignupEmail] = useState("");
 
-    const handleShowSignup = () => setShowLogin(false);
-    const handleShowLogin = () => setShowLogin(true);
+  const handleShowLogin = () => setCurrentView("login");
+  const handleShowSignup = () => setCurrentView("signup");
 
-    const handleSignupSuccess = (phoneNumber) => {
-        // After successful signup, typically you'd switch to login or a verification page.
-        // For this example, we'll switch back to the login form.
-        handleShowLogin();
-    };
+  const handleLoginSuccess = () => {
+    if (onLogin) onLogin();
+  };
 
-    return (
-        <div>
-            {showLogin ? (
-                <Login onLogin={onLogin} onShowSignup={handleShowSignup} />
-            ) : (
-                <Signup onSignupSuccess={handleSignupSuccess} onShowLogin={handleShowLogin} />
-            )}
-        </div>
-    );
+  const handleSignupSuccess = ({ email, phoneNumber }) => {
+    setSignupEmail(email || phoneNumber || "");
+    setCurrentView("verification");
+  };
+
+  const handleVerificationSuccess = () => {
+    setCurrentView("login");
+  };
+
+  const renderView = () => {
+    if (currentView === "login") {
+      return (
+        <Login onLogin={handleLoginSuccess} onShowSignup={handleShowSignup} />
+      );
+    } else if (currentView === "signup") {
+      return (
+        <Signup
+          onSignupSuccess={handleSignupSuccess}
+          onShowLogin={handleShowLogin}
+        />
+      );
+    } else if (currentView === "verification") {
+      return (
+        <VerificationPage
+          email={signupEmail}
+          onVerificationSuccess={handleVerificationSuccess}
+        />
+      );
+    }
+    return null;
+  };
+
+  return <div>{renderView()}</div>;
 }

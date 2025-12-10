@@ -1,35 +1,48 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AuthPage from "./pages/AuthPage";
 import HomePage from "./pages/HomePage";
 
 export default function App() {
-    // Temporarily set isLoggedIn to true to directly view HomePage for development
-    const [isLoggedIn, setIsLoggedIn] = useState(true); // Changed from !!localStorage.getItem("access_token")
-    const [showLoginSuccessPopup, setShowLoginSuccessPopup] = useState(false); // New state for pop-up
+  const FORCE_SHOW_LOGIN = false;
 
-    const handleLogin = () => {
-        setIsLoggedIn(true);
-        setShowLoginSuccessPopup(true); // Show pop-up on successful login
-    };
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    if (FORCE_SHOW_LOGIN) return false;
+    return !!localStorage.getItem("access_token");
+  });
 
-    const handleLogout = () => {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        setIsLoggedIn(false);
-        setShowLoginSuccessPopup(false); // Hide pop-up on logout
-    };
+  const [showLoginSuccessPopup, setShowLoginSuccessPopup] = useState(false);
 
-    const handleCloseLoginSuccessPopup = () => {
-        setShowLoginSuccessPopup(false);
-    };
+  useEffect(() => {
+    if (FORCE_SHOW_LOGIN) {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      setIsLoggedIn(false);
+    }
+  }, []);
 
-    return isLoggedIn ? (
-        <HomePage
-            onLogout={handleLogout}
-            showLoginSuccessPopup={showLoginSuccessPopup}
-            onCloseLoginSuccessPopup={handleCloseLoginSuccessPopup}
-        />
-    ) : (
-        <AuthPage onLogin={handleLogin} />
-    );
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+    setShowLoginSuccessPopup(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    setIsLoggedIn(false);
+    setShowLoginSuccessPopup(false);
+  };
+
+  const handleCloseLoginSuccessPopup = () => {
+    setShowLoginSuccessPopup(false);
+  };
+
+  return isLoggedIn ? (
+    <HomePage
+      onLogout={handleLogout}
+      showLoginSuccessPopup={showLoginSuccessPopup}
+      onCloseLoginSuccessPopup={handleCloseLoginSuccessPopup}
+    />
+  ) : (
+    <AuthPage onLogin={handleLogin} />
+  );
 }
