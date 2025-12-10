@@ -1,258 +1,115 @@
-import React, { useState, useContext } from "react";
+import React, {
+  useEffect,
+  useImperativeHandle,
+  forwardRef,
+  useContext,
+  useState,
+} from "react";
+import ExpenseContext from "../components/ExpenseContext";
+import AddExpenseModal from "./AddExpenseModal";
+import TransactionRow from "./TransactionRow";
 import { ThemeContext } from "./ThemeContext";
 
-export default function ExpenseSplitter() {
-    const [items, setItems] = useState([]);
-    const [itemName, setItemName] = useState("");
-    const [itemPrice, setItemPrice] = useState("");
-    const [participants, setParticipants] = useState([]);
-    const [participantName, setParticipantName] = useState("");
-    const [selectedParticipants, setSelectedParticipants] = useState([]);
-    const [shares, setShares] = useState({});
-    const [paidShares, setPaidShares] = useState({});
+function ExpenseSplitterInner(props, ref) {
+  const { members, transactions, addTransaction } = useContext(ExpenseContext);
+  const [isAddOpen, setIsAddOpen] = useState(false);
 
-    const { theme } = useContext(ThemeContext);
+  useImperativeHandle(ref, () => ({
+    openAddModal: () => setIsAddOpen(true),
+    closeAddModal: () => setIsAddOpen(false),
+  }));
 
-    const resetCalculations = () => {
-        setShares({});
-        setPaidShares({});
-    };
+  useEffect(() => {
+    const handler = () => setIsAddOpen(true);
+    window.addEventListener("openAddExpense", handler);
+    return () => window.removeEventListener("openAddExpense", handler);
+  }, []);
 
-    const handleAddItem = (e) => {
-        e.preventDefault();
-        if (itemName && itemPrice > 0 && selectedParticipants.length > 0) {
-            setItems([...items, { name: itemName, price: parseFloat(itemPrice), participants: selectedParticipants }]);
-            setItemName("");
-            setItemPrice("");
-            setSelectedParticipants([]);
-            resetCalculations();
-        }
-    };
+  const handleSaveExpense = (expense) => {
+    console.log("[ExpenseSplitter] saving expense", expense);
+    addTransaction(expense);
+    setIsAddOpen(false);
+  };
 
-    const handleRemoveItem = (indexToRemove) => {
-        setItems((prevItems) => prevItems.filter((_, index) => index !== indexToRemove));
-        resetCalculations();
-    };
+  const active = transactions.filter((t) => !t.archived);
+  const history = transactions
+    .filter((t) => t.archived)
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    const handleAddParticipant = (e) => {
-        e.preventDefault();
-        if (participantName && !participants.includes(participantName)) {
-            setParticipants([...participants, participantName]);
-            setParticipantName("");
-            resetCalculations();
-        }
-    };
+  const { theme } = React.useContext(ThemeContext);
 
-    const handleRemoveParticipant = (participantToRemove) => {
-        setParticipants((prevParticipants) =>
-            prevParticipants.filter((p) => p !== participantToRemove)
-        );
-
-
-        setSelectedParticipants((prevSelected) =>
-            prevSelected.filter((p) => p !== participantToRemove)
-        );
-
-
-        setItems((prevItems) =>
-            prevItems.map((item) => ({
-                ...item,
-                participants: item.participants.filter((p) => p !== participantToRemove),
-            }))
-        );
-
-        resetCalculations();
-    };
-
-    const handleToggleParticipant = (participant) => {
-        setSelectedParticipants((prev) =>
-            prev.includes(participant)
-                ? prev.filter((p) => p !== participant)
-                : [...prev, participant]
-        );
-    };
-
-    const handleTogglePaid = (participant) => {
-        setPaidShares((prevPaidShares) => ({
-            ...prevPaidShares,
-            [participant]: !prevPaidShares[participant],
-        }));
-    };
-
-    const calculateShares = () => {
-        const newShares = {};
-        const initialPaidShares = {};
-        participants.forEach(p => {
-            newShares[p] = 0;
-            initialPaidShares[p] = false;
-        });
-
-        items.forEach(item => {
-            if (item.participants.length > 0) {
-                const sharePerPerson = item.price / item.participants.length;
-                item.participants.forEach(p => {
-                    if (newShares.hasOwnProperty(p)) {
-                        newShares[p] += sharePerPerson;
-                    }
-                });
-            }
-        });
-
-        setShares(newShares);
-        setPaidShares(initialPaidShares);
-    };
-
-
-    const inputClasses = `py-3 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-        theme === "light"
-            ? "bg-white text-black placeholder-gray-500 border-gray-300"
-            : "bg-gray-800 text-white placeholder-gray-400 border-gray-600"
-    }`;
-    const buttonClasses = `py-3 px-4 rounded-lg font-semibold transition-colors duration-200 ${
-        theme === "light"
-            ? "bg-blue-500 text-white hover:bg-blue-600"
-            : "bg-blue-700 text-white hover:bg-blue-800"
-    }`;
-    const secondaryButtonClasses = `py-3 px-4 rounded-lg font-semibold transition-colors duration-200 ${
-        theme === "light"
-            ? "bg-gray-300 text-black hover:bg-gray-400"
-            : "bg-gray-600 text-white hover:bg-gray-700"
-    }`;
-
-    return (
-        <div className="flex flex-col gap-6 p-4 max-w-md mx-auto w-full">
-            <h3 className="text-2xl font-bold text-center cursor-default">Expense Splitter</h3>
-
-            {/* Add Participants */}
-            <div className=" p-5 rounded-xl shadow-lg">
-                <h4 className="text-xl font-semibold mb-3 cursor-default">Add Participants</h4>
-                <form onSubmit={handleAddParticipant} className="flex flex-col sm:flex-row gap-3 mb-4">
-                    <input
-                        type="text"
-                        placeholder="Participant Name"
-                        value={participantName}
-                        onChange={(e) => setParticipantName(e.target.value)}
-                        className={`${inputClasses} flex-grow`}
-                        required
-                    />
-                    <button type="submit" className={buttonClasses}>Add</button>
-                </form>
-                {participants.length > 0 && (
-                    <div>
-                        <p className="font-medium mb-2 text-lg">Current Participants:</p>
-                        <div className="flex flex-wrap gap-2">
-                            {participants.map((p) => (
-                                <span key={p} className="badge badge-lg bg-gray-200 text-gray-800 py-2 px-3 rounded-full flex items-center gap-1 text-base">
-                                    {p}
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveParticipant(p)}
-                                        className="btn btn-xs btn-circle btn-ghost text-red-500"
-                                        aria-label={`Remove ${p}`}
-                                    >
-                                        ✕
-                                    </button>
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            {/* Add Items */}
-            <div className="p-5 rounded-xl shadow-lg">
-                <h4 className="text-xl font-semibold mb-3 cursor-default">Add Item</h4>
-                <form onSubmit={handleAddItem} className="flex flex-col gap-4">
-                    <input
-                        type="text"
-                        placeholder="Item Name"
-                        value={itemName}
-                        onChange={(e) => setItemName(e.target.value)}
-                        className={inputClasses}
-                        required
-                    />
-                    <input
-                        type="number"
-                        placeholder="Price"
-                        value={itemPrice}
-                        onChange={(e) => setItemPrice(e.target.value)}
-                        className={inputClasses}
-                        min="0.01"
-                        step="0.01"
-                        required
-                    />
-                    {participants.length > 0 && (
-                        <div className="flex flex-wrap gap-3">
-                            <p className="font-medium w-full text-lg">Who shared this item?</p>
-                            {participants.map((p) => (
-                                <label key={p} className="bg=${theme} flex items-center gap-2 cursor-pointer text-${theme}">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedParticipants.includes(p)}
-                                        onChange={() => handleToggleParticipant(p)}
-                                        className="checkbox checkbox-md bg-white"
-                                    />
-                                    {p}
-                                </label>
-                            ))}
-                        </div>
-                    )}
-                    <button type="submit" className={buttonClasses}>Add Item</button>
-                </form>
-                {items.length > 0 && (
-                    <div className="mt-5">
-                        <p className="font-medium mb-2 text-lg cursor-default">Added Items:</p>
-                        <ul className="list-none pl-0 space-y-3">
-                            {items.map((item, index) => (
-                                <li key={index} className="flex items-center justify-between gap-2 bg-${theme} p-3 rounded-lg shadow-sm">
-                                    <span className="text-base flex-grow">
-                                        {item.name}: <span className="font-semibold">${item.price.toFixed(2)}</span> (Shared by: {item.participants.join(", ") || "None"})
-                                    </span>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveItem(index)}
-                                        className="btn btn-sm btn-circle btn-ghost text-red-500"
-                                        aria-label={`Remove ${item.name}`}
-                                    >
-                                        ✕
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
-            </div>
-
-            {/* Calculate Shares */}
-            {items.length > 0 && participants.length > 0 && (
-                <div className="bg-${theme} p-5 rounded-xl shadow-lg">
-                    <button onClick={calculateShares} className={`${buttonClasses} w-full mb-4`}>
-                        Calculate Shares
-                    </button>
-                    {Object.keys(shares).length > 0 && (
-                        <div className="mt-4">
-                            <h4 className="text-xl font-semibold mb-3 cursor-default">Individual Shares:</h4>
-                            <ul className="list-none pl-0 space-y-3">
-                                {Object.entries(shares).map(([p, amount]) => (
-                                    <li key={p} className="flex items-center gap-3 bg-${theme} p-3 rounded-lg shadow-sm">
-                                        <label className="flex items-center gap-2 cursor-pointer flex-grow">
-                                            <input
-                                                type="checkbox"
-                                                checked={!!paidShares[p]}
-                                                onChange={() => handleTogglePaid(p)}
-                                                className="bg-white checkbox checkbox-md"
-                                            />
-                                            <span className={`${paidShares[p] ? `line-through text-${theme}` : `text-${theme}`} text-base font-medium`}>
-                                                {p}: <span className="font-semibold">${amount.toFixed(2)}</span>
-                                            </span>
-                                        </label>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                </div>
-            )}
+  return (
+    <div className={`${theme === "light" ? "text-gray-900" : "text-gray-100"}`}>
+      {/* Active Transactions panel */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-md font-semibold">Active Transactions</h4>
+          <div
+            className={`text-sm ${
+              theme === "light" ? "text-gray-500" : "text-gray-400"
+            }`}
+          >
+            {active.length}
+          </div>
         </div>
-    );
+        <div
+          className={`${
+            theme === "light" ? "bg-white" : "bg-gray-800"
+          } rounded-md shadow-sm divide-y`}
+        >
+          {active.length === 0 ? (
+            <div
+              className={`p-4 text-sm ${
+                theme === "light" ? "text-gray-500" : "text-gray-400"
+              }`}
+            >
+              No active transactions
+            </div>
+          ) : (
+            active.map((tx) => <TransactionRow key={tx.id} tx={tx} />)
+          )}
+        </div>
+      </div>
+
+      {/* History panel */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-md font-semibold">History</h4>
+          <div
+            className={`text-sm ${
+              theme === "light" ? "text-gray-500" : "text-gray-400"
+            }`}
+          >
+            {history.length}
+          </div>
+        </div>
+        <div
+          className={`${
+            theme === "light" ? "bg-white" : "bg-gray-800"
+          } rounded-md shadow-sm divide-y`}
+        >
+          {history.length === 0 ? (
+            <div
+              className={`p-4 text-sm ${
+                theme === "light" ? "text-gray-500" : "text-gray-400"
+              }`}
+            >
+              No history yet
+            </div>
+          ) : (
+            history.map((tx) => <TransactionRow key={tx.id} tx={tx} />)
+          )}
+        </div>
+      </div>
+
+      <AddExpenseModal
+        open={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        onSave={handleSaveExpense}
+        members={members}
+      />
+    </div>
+  );
 }
+
+export default forwardRef(ExpenseSplitterInner);
