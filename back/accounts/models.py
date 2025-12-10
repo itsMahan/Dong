@@ -41,10 +41,10 @@ class OtpCode(models.Model):
     def __str__(self):
         return f'{self.user.full_name} - Code'
 
-    def set_code(self, otp_code):
-        self.code = otp_code
-        self.code_expiry = timezone.now() + timedelta(minutes=2)
-        self.save()
+    # def set_code(self, otp_code):
+    #     self.code = otp_code
+    #     self.code_expiry = timezone.now() + timedelta(minutes=2)
+    #     self.save()
 
     def is_valid(self, code):
         if self.is_used:
