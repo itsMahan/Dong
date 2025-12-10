@@ -1,160 +1,139 @@
 import React, { useState, useContext } from "react";
-// import axios from "axios";
+import axios from "axios";
 import { ThemeContext } from "./../components/ThemeContext";
 import Navbar from "../components/Navbar";
 
 export default function Signup({ onSignupSuccess, onShowLogin }) {
-    const [fullName, setFullName] = useState("");
-    const [phoneNumber, setPhoneNumber] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [password2, setPassword2] = useState("");
-    const [error, setError] = useState("");
-    const [success, setSuccess] = useState("");
+  const { theme } = useContext(ThemeContext);
 
-    const { theme } = useContext(ThemeContext);
+  const [fullName, setFullName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (password !== password2) {
-            setError("Passwords do not match");
-            return;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (!email) {
+      setError("Email is required.");
+      return;
+    }
+    if (password !== password2) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const payload = { email, full_name: fullName, password, password2 };
+      console.log("REGISTER payload:", payload);
+
+      const res = await axios.post(
+        "http://127.0.0.1:8000/api/users/register",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
         }
+      );
 
-        // --- MOCK API ---
-        console.log("Simulating registration for:", {
-            fullName,
-            email,
-            phoneNumber,
-        });
-        setSuccess("Account created successfully! Please verify.");
-        setError("");
-        onSignupSuccess(phoneNumber); // Pass phone number for verification
-        // --- END MOCK API ---
+      console.log("REGISTER response:", res.data);
+      setSuccess("Account created. A verification code has been sent.");
+      if (onSignupSuccess) onSignupSuccess({ email, phoneNumber });
+    } catch (err) {
+      console.error("REGISTER error:", err);
+      const data = err?.response?.data;
+      const msg =
+        (data &&
+          (data.detail || data.email || data.non_field_errors || data)) ||
+        err?.message ||
+        "Failed to register";
+      setError(typeof msg === "string" ? msg : JSON.stringify(msg));
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        /*
-        // --- REAL API (Example) ---
-        try {
-            await axios.post("http://127.0.0.1:8000/api/users/register", {
-                full_name: fullName,
-                email,
-                phone_number: phoneNumber,
-                password,
-                password2,
-            });
-            setSuccess("Account created successfully! Please verify.");
-            setError("");
-            onSignupSuccess(phoneNumber); // Switch to verification page
-        } catch (err) {
-            setError("Failed to register. Try a different phone number.");
-        }
-        */
-    };
-
-    return (
-        <div
-            className={`min-h-screen flex flex-col transition-colors duration-300 ${
-                theme === "light" ? "bg-white text-black" : "bg-gray-900 text-white"
-            }`}
+  return (
+    <div
+      className={`min-h-screen ${
+        theme === "light" ? "bg-white" : "bg-gray-900"
+      } text-black`}
+    >
+      <Navbar />
+      <div className="flex items-center justify-center p-8">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-4 w-full max-w-sm"
         >
-            <Navbar />
-            <div className="flex-grow flex items-center justify-center p-4 sm:p-6 lg:p-8">
-                <form
-                    onSubmit={handleSubmit}
-                    className="flex flex-col gap-4 w-full max-w-sm md:max-w-md"
-                >
-                    <h2 className="text-2xl md:text-3xl font-bold cursor-pointer">
-                        Sign Up
-                    </h2>
-
-                    <input
-                        type="text"
-                        placeholder="Full Name"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        required
-                        className={`p-2 rounded border focus:outline-none ${
-                            theme === "light"
-                                ? "bg-white text-black placeholder-gray-500 border-gray-300"
-                                : "bg-gray-800 text-white placeholder-gray-400 border-gray-600"
-                        }`}
-                    />
-
-                    <input
-                        type="tel"
-                        placeholder="Phone Number"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        required
-                        className={`p-2 rounded border focus:outline-none ${
-                            theme === "light"
-                                ? "bg-white text-black placeholder-gray-500 border-gray-300"
-                                : "bg-gray-800 text-white placeholder-gray-400 border-gray-600"
-                        }`}
-                    />
-
-                    <input
-                        type="email"
-                        placeholder="Email (Optional)"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className={`p-2 rounded border focus:outline-none ${
-                            theme === "light"
-                                ? "bg-white text-black placeholder-gray-500 border-gray-300"
-                                : "bg-gray-800 text-white placeholder-gray-400 border-gray-600"
-                        }`}
-                    />
-
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className={`p-2 rounded border focus:outline-none ${
-                            theme === "light"
-                                ? "bg-white text-black placeholder-gray-500 border-gray-300"
-                                : "bg-gray-800 text-white placeholder-gray-400 border-gray-600"
-                        }`}
-                    />
-
-                    <input
-                        type="password"
-                        placeholder="Confirm Password"
-                        value={password2}
-                        onChange={(e) => setPassword2(e.target.value)}
-                        required
-                        className={`p-2 rounded border focus:outline-none ${
-                            theme === "light"
-                                ? "bg-white text-black placeholder-gray-500 border-gray-300"
-                                : "bg-gray-800 text-white placeholder-gray-400 border-gray-600"
-                        }`}
-                    />
-
-                    {error && <p className="text-red-500">{error}</p>}
-                    {success && <p className="text-green-500">{success}</p>}
-
-                    <button
-                        type="submit"
-                        className={`p-2 rounded ${
-                            theme === "light"
-                                ? "bg-blue-500 text-white"
-                                : "bg-blue-700 text-white"
-                        }`}
-                    >
-                        Sign Up
-                    </button>
-                    <p className="text-sm text-center mt-2">
-                        have an account?{" "}
-                        <span
-                            className="text-blue-500 cursor-pointer"
-                            onClick={onShowLogin}
-                        >
-                            Log in
-                        </span>
-                    </p>
-                </form>
-            </div>
-        </div>
-    );
+          <h2 className="text-2xl font-bold">Sign Up</h2>
+          <input
+            type="text"
+            placeholder="Full name"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+            className="p-2 rounded border"
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="p-2 rounded border"
+          />
+          <input
+            type="tel"
+            placeholder="Phone (optional)"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            className="p-2 rounded border"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="p-2 rounded border"
+          />
+          <input
+            type="password"
+            placeholder="Confirm password"
+            value={password2}
+            onChange={(e) => setPassword2(e.target.value)}
+            required
+            className="p-2 rounded border"
+          />
+          {error && <p className="text-red-500">{error}</p>}
+          {success && <p className="text-green-500">{success}</p>}
+          <button
+            type="submit"
+            disabled={loading}
+            className="p-2 rounded bg-green-600 text-white"
+          >
+            {loading ? "Creating..." : "Create account"}
+          </button>
+          <p className="text-sm text-center mt-2">
+            Already have an account?{" "}
+            <span
+              className="text-blue-500 cursor-pointer"
+              onClick={onShowLogin}
+            >
+              Login
+            </span>
+          </p>
+        </form>
+      </div>
+    </div>
+  );
 }

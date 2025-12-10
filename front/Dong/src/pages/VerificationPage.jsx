@@ -1,95 +1,152 @@
-import React, { useState, useContext } from "react";
-// import axios from "axios";
+import React, { useState, useContext, useEffect } from "react";
+import axios from "axios";
 import { ThemeContext } from "../components/ThemeContext";
 import Navbar from "../components/Navbar";
 
-export default function VerificationPage({ phoneNumber, onVerificationSuccess }) {
-    const [code, setCode] = useState("");
-    const [error, setError] = useState("");
-    const { theme } = useContext(ThemeContext);
+export default function VerificationPage({ email, onVerificationSuccess }) {
+  const { theme } = useContext(ThemeContext);
+  const [code, setCode] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [resendMsg, setResendMsg] = useState("");
+  const [loadingResend, setLoadingResend] = useState(false);
+  const [loadingVerify, setLoadingVerify] = useState(false);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError("");
+  useEffect(() => {
+    console.log("VerificationPage email:", email);
+  }, [email]);
 
-        // --- MOCK API ---
-        console.log(`Verifying user with phone: ${phoneNumber} and code: ${code}`);
-        if (code === "123456") {
-            localStorage.setItem(
-                "access_token",
-                "mock_access_token_after_verification"
-            );
-            localStorage.setItem(
-                "refresh_token",
-                "mock_refresh_token_after_verification"
-            );
-            onVerificationSuccess();
-        } else {
-            setError("Invalid verification code. Please try again.");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    if (!email) {
+      setError("No email provided for verification.");
+      return;
+    }
+    if (!code) {
+      setError("Please enter the verification code.");
+      return;
+    }
+
+    setLoadingVerify(true);
+    try {
+      const payload = { email, otp: code };
+      console.log("VERIFY payload:", payload);
+
+      const res = await axios.post(
+        "http://127.0.0.1:8000/api/users/verify",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
         }
-        // --- END MOCK API ---
+      );
 
-        /*
-        // --- REAL API (Example) ---
-        try {
-            const res = await axios.post('http://127.0.0.1:8000/api/users/verify/', {
-                phone_number: phoneNumber,
-                code,
-            });
-            localStorage.setItem('access_token', res.data.access);
-            localStorage.setItem('refresh_token', res.data.refresh);
-            onVerificationSuccess();
-        } catch (err) {
-            setError('Invalid verification code. Please try again.');
+      console.log("VERIFY response:", res.data);
+      setSuccess("Account verified. Please log in.");
+      if (onVerificationSuccess) onVerificationSuccess();
+    } catch (err) {
+      console.error("VERIFY error:", err);
+      const serverData = err?.response?.data;
+      const msg =
+        serverData && Object.keys(serverData).length
+          ? serverData
+          : err?.message || "Verification failed";
+      setError(typeof msg === "string" ? msg : JSON.stringify(msg));
+    } finally {
+      setLoadingVerify(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setResendMsg("");
+    setLoadingResend(true);
+    if (!email) {
+      setResendMsg("No email provided to resend the code to.");
+      setLoadingResend(false);
+      return;
+    }
+    try {
+      console.log("RESEND payload:", { email });
+      const res = await axios.post(
+        "http://127.0.0.1:8000/api/users/resend",
+        { email },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
         }
-        */
-    };
+      );
+      console.log("RESEND response:", res.data);
+      setResendMsg("A new code was sent to your email.");
+    } catch (err) {
+      console.error("RESEND error:", err);
+      const serverData = err?.response?.data;
+      const msg =
+        serverData && Object.keys(serverData).length
+          ? serverData
+          : err?.message || "Failed to resend code";
+      setResendMsg(typeof msg === "string" ? msg : JSON.stringify(msg));
+    } finally {
+      setLoadingResend(false);
+    }
+  };
 
-    return (
-        <div
-            className={`min-h-screen flex flex-col transition-colors duration-300 ${
-                theme === "light" ? "bg-white text-black" : "bg-gray-900 text-white"
-            }`}
+  return (
+    <div
+      className={`min-h-screen ${
+        theme === "light" ? "bg-white" : "bg-gray-900"
+      } text-black`}
+    >
+      <Navbar />
+      <div className="flex items-center justify-center p-8">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-4 w-full max-w-sm"
         >
-            <Navbar />
-            <div className="flex-grow flex items-center justify-center p-4 sm:p-6 lg:p-8">
-                <form
-                    onSubmit={handleSubmit}
-                    className="flex flex-col gap-4 w-full max-w-sm md:max-w-md"
-                >
-                    <h2 className="text-2xl md:text-3xl font-bold">
-                        Verify Your Account
-                    </h2>
-
-                    <p>
-                        A verification code has been sent to your mobile device. (Hint: try
-                        123456)
-                    </p>
-                    <input
-                        type="text"
-                        placeholder="Verification Code"
-                        value={code}
-                        onChange={(e) => setCode(e.target.value)}
-                        required
-                        className={`p-2 rounded border focus:outline-none ${
-                            theme === "light"
-                                ? "bg-white text-black placeholder-gray-500 border-gray-300"
-                                : "bg-gray-800 text-white placeholder-gray-400 border-gray-600"
-                        }`}
-                    />
-                    {error && <p className="text-red-500">{error}</p>}
-                    <button
-                        type="submit"
-                        className={`p-2 rounded ${
-                            theme === "light"
-                                ? "bg-blue-500 text-white"
-                                : "bg-blue-700 text-white"
-                        }`}
-                    >
-                        Verify
-                    </button>
-                </form>
-            </div>
-        </div>
-    );
+          <h2 className="text-2xl font-bold">Verify Your Account</h2>
+          <p className="text-sm">
+            A verification code has been sent to{" "}
+            <strong>{email || "(no email)"}</strong>.
+          </p>
+          <input
+            type="text"
+            placeholder="Verification Code"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            required
+            className="p-2 rounded border"
+          />
+          {error && <p className="text-red-500 whitespace-pre-wrap">{error}</p>}
+          {success && <p className="text-green-500">{success}</p>}
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              disabled={loadingVerify}
+              className="p-2 rounded bg-blue-600 text-white"
+            >
+              {loadingVerify ? "Verifying..." : "Verify"}
+            </button>
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={loadingResend}
+              className="text-sm text-blue-500 underline"
+            >
+              {loadingResend ? "Resending..." : "Resend code"}
+            </button>
+          </div>
+          {resendMsg && (
+            <p className="text-sm text-gray-400 whitespace-pre-wrap">
+              {resendMsg}
+            </p>
+          )}
+        </form>
+      </div>
+    </div>
+  );
 }
