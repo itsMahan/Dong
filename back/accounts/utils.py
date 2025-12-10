@@ -1,8 +1,10 @@
+from datetime import timedelta
 from kavenegar import *
 import random
-from .models import User
+from .models import User, OtpCode
 from django.core.mail import send_mail
 from django.conf import settings
+from django.utils import timezone
 
 
 def send_otp_code(phone_number):
@@ -24,12 +26,21 @@ def send_otp_code(phone_number):
     except HTTPException as e:
         print(e)
 
+
 def send_otp_code_via_email(email):
     subject = 'your Dong app verification code'
     code = random.randint(1000, 9999)
     message = f'{code}کد تایید دنگ: '
     email_from = settings.EMAIL_HOST
-    send_mail(subject, message, email_from, [email])
-    user = User.objects.get(email=email)
-    user.otp = code
-    user.save()
+    try:
+        send_mail(subject, message, email_from, [email])
+        user = User.objects.get(email=email)
+        OtpCode.objects.create(
+            user = user,
+            code = code,
+            code_expiry = timezone.now() + timedelta(minutes=2)
+        )
+        return True
+    except Exception as e:
+        print(f"Error: {e}")
+        return False
