@@ -7,3 +7,9 @@ class DongCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dong
         fields = ['title']
+
+class DongUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Dong
+        fields = ['title']
