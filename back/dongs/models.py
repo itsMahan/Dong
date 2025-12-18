@@ -25,8 +25,8 @@ class Expense(models.Model):
     dong = models.ForeignKey(Dong, on_delete=models.CASCADE, related_name='expenses')
     title = models.CharField(max_length=255)
     amount = models.IntegerField()
-    paid_by = models.ForeignKey(DongMember, on_delete=models.CASCADE, related_name='pay')
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='pay')
+    paid_by = models.ForeignKey(DongMember, on_delete=models.CASCADE, related_name='paid_expenses')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_expenses')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
