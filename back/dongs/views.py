@@ -21,6 +21,14 @@ class DongCreateView(APIView):
         return Response({"message" : "a dongs has been created"} , status=status.HTTP_201_CREATED)
 
 
+class DongListView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        dongs = Dong.objects.filter(created_by=request.user)
+        serializer = DongSerializer(dongs, many=True)
+        return Response(serializer.data)
+
 
 class DongDeleteView(APIView):
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
