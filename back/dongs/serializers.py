@@ -2,14 +2,15 @@ from .models import *
 from rest_framework import serializers
 
 
-class DongCreateSerializer(serializers.ModelSerializer):
+class DongSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Dong
         fields = ['title']
 
-class DongUpdateSerializer(serializers.ModelSerializer):
+
+class DongMemberSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Dong
-        fields = ['title']
+        model = DongMember
+        fields = ['dong', 'name']
