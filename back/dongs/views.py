@@ -114,3 +114,72 @@ class DeleteDongMember(APIView):
         member.delete()
         return Response("dong member has been deleted successfully", status=status.HTTP_200_OK)
 
+
+class AddExpenseView(APIView):
+    permission_classes = [IsOwnerOrReadOnly, permissions.IsAuthenticated]
+    serializer_class = ExpenseSerializer
+
+    def post(self, request):
+        serializer = ExpenseSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if Expense.objects.filter(
+            dong = serializer.validated_data['dong'],
+            title = serializer.validated_data['title'],
+        ).exists():
+            return Response("An expense with this title already exists in this dong.", status=status.HTTP_400_BAD_REQUEST)
+        else:
+            Expense.objects.create(
+                dong=serializer.validated_data['dong'],
+                title=serializer.validated_data['title'],
+                amount=serializer.validated_data['amount'],
+                paid_by=serializer.validated_data['paid_by'],
+                created_by=request.user,
+            )
+        return Response("Expense added successfully", status=status.HTTP_200_OK)
+
+
+class UpdateExpenseView(APIView):
+    permission_classes = [IsOwnerOrReadOnly, permissions.IsAuthenticated]
+    serializer_class = ExpenseUpdateSerializer
+
+    def patch(self, request, pk):
+        try:
+            expense = Expense.objects.get(id=pk)
+        except Expense.DoesNotExist:
+            return Response({"error": "No Expense has been found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ExpenseSerializer(
+            expense,  # instance to update
+            data=request.data,
+            partial=True  # allow partial update
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response("Expense has been updated successfully", status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DeleteExpenseView(APIView):
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+
+    def delete(self, request, pk):
+        try:
+            expense = Expense.objects.get(id=pk)
+        except Expense.DoesNotExist:
+            return Response({"error": "No Expense has been found"}, status=status.HTTP_404_NOT_FOUND)
+
+        expense.delete()
+        return Response("expense has been deleted successfully", status=status.HTTP_200_OK)
+
+class ExpenseListView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, dong_id):
+        expenses = Expense.objects.filter(dong=dong_id)
+        serializer = ExpenseSerializer(expenses, many=True)
+        return Response(serializer.data)
