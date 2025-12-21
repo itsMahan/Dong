@@ -32,16 +32,16 @@ class Expense(models.Model):
     def __str__(self):
         return f'{self.title} in {self.dong.title} paid by {self.paid_by.name}'
 
-#
-# class ExpenseParticipant(models.Model):
-#     expense = models.ForeignKey(Expense, on_delete=models.CASCADE, related_name='participants')
-#     member = models.ForeignKey(DongMember, on_delete=models.CASCADE, related_name='shared_expenses')
-#
-#     class Meta:
-#         unique_together = ('expense', 'member')
-#
-#     def __str__(self):
-#         return f"{self.member.name} in {self.expense.title}"
+
+class ExpenseParticipant(models.Model):
+    expense = models.ForeignKey(Expense, on_delete=models.CASCADE, related_name='participants')
+    member = models.ForeignKey(DongMember, on_delete=models.CASCADE, related_name='shared_expenses')
+
+    class Meta:
+        unique_together = ('expense', 'member')
+
+    def __str__(self):
+        return f"{self.member.name} in {self.expense.title}"
 
 
 
