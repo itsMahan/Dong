@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
-import axios from "axios";
+import { verify, resendCode } from "../api/auth";
 import { ThemeContext } from "../components/ThemeContext";
 import Navbar from "../components/Navbar";
 
@@ -34,18 +34,9 @@ export default function VerificationPage({ email, onVerificationSuccess }) {
       const payload = { email, otp: code };
       console.log("VERIFY payload:", payload);
 
-      const res = await axios.post(
-        "http://127.0.0.1:8000/api/users/verify",
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }
-      );
+      await verify(payload);
 
-      console.log("VERIFY response:", res.data);
+      console.log("VERIFY success");
       setSuccess("Account verified. Please log in.");
       if (onVerificationSuccess) onVerificationSuccess();
     } catch (err) {
@@ -71,17 +62,8 @@ export default function VerificationPage({ email, onVerificationSuccess }) {
     }
     try {
       console.log("RESEND payload:", { email });
-      const res = await axios.post(
-        "http://127.0.0.1:8000/api/users/resend",
-        { email },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }
-      );
-      console.log("RESEND response:", res.data);
+      await resendCode(email);
+      console.log("RESEND success");
       setResendMsg("A new code was sent to your email.");
     } catch (err) {
       console.error("RESEND error:", err);

@@ -1,21 +1,23 @@
 import React, { useContext, useState } from "react";
+import { useParams } from "react-router-dom";
 import ExpenseContext from "../components/ExpenseContext";
 import ConfirmDialog from "./ConfirmDialog";
 import { ThemeContext } from "./ThemeContext";
 import { formatToman } from "../utils/format";
 
 export default function TransactionRow({ tx }) {
+  const { groupId } = useParams();
   const { updateTransaction, removeTransaction } = useContext(ExpenseContext);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { theme } = useContext(ThemeContext);
   const positive = Number(tx.amount) >= 0;
 
   const markDone = () => {
-    updateTransaction({ ...tx, archived: true });
+    updateTransaction(groupId, { ...tx, archived: true });
   };
 
   const restore = () => {
-    updateTransaction({ ...tx, archived: false });
+    updateTransaction(groupId, { ...tx, archived: false });
   };
 
   const handleDelete = () => {
@@ -23,7 +25,7 @@ export default function TransactionRow({ tx }) {
   };
 
   const doDelete = () => {
-    removeTransaction(tx.id);
+    removeTransaction(groupId, tx.id);
     setConfirmOpen(false);
   };
 

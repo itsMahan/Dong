@@ -19,14 +19,17 @@ export default function AddExpenseModal({
   const { theme } = useContext(ThemeContext) || { theme: "light" };
 
   useEffect(() => {
-    if (open) {
-      setAmount("");
-      setDescription("");
-      setPayer(members[0]?.id ?? "");
-      setSelected(members.map((m) => m.id));
-      setSubmitting(false);
-    }
-  }, [open, members]);
+    if (!open) return;
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [open, onClose]);
 
   useEffect(() => {
     if (members.length > 0 && !members.find((m) => m.id === payer)) {

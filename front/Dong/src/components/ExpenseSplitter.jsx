@@ -10,8 +10,10 @@ import AddExpenseModal from "./AddExpenseModal";
 import TransactionRow from "./TransactionRow";
 import { ThemeContext } from "./ThemeContext";
 
-function ExpenseSplitterInner(props, ref) {
-  const { members, transactions, addTransaction } = useContext(ExpenseContext);
+function ExpenseSplitterInner({ group }, ref) {
+  const { addTransaction } = useContext(ExpenseContext);
+  const { id: groupId, members = [], transactions = [] } = group || {};
+
   const [isAddOpen, setIsAddOpen] = useState(false);
 
   useImperativeHandle(ref, () => ({
@@ -27,7 +29,7 @@ function ExpenseSplitterInner(props, ref) {
 
   const handleSaveExpense = (expense) => {
     console.log("[ExpenseSplitter] saving expense", expense);
-    addTransaction(expense);
+    addTransaction(groupId, expense);
     setIsAddOpen(false);
   };
 
@@ -66,7 +68,7 @@ function ExpenseSplitterInner(props, ref) {
               No active transactions
             </div>
           ) : (
-            active.map((tx) => <TransactionRow key={tx.id} tx={tx} />)
+            active.map((tx) => <TransactionRow key={tx.id} tx={tx} groupId={groupId} />)
           )}
         </div>
       </div>
@@ -97,7 +99,7 @@ function ExpenseSplitterInner(props, ref) {
               No history yet
             </div>
           ) : (
-            history.map((tx) => <TransactionRow key={tx.id} tx={tx} />)
+            history.map((tx) => <TransactionRow key={tx.id} tx={tx} groupId={groupId} />)
           )}
         </div>
       </div>
