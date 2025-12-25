@@ -1,5 +1,5 @@
 import React, { useState, useContext } from "react";
-import axios from "axios";
+import { register } from "../api/auth";
 import { ThemeContext } from "./../components/ThemeContext";
 import Navbar from "../components/Navbar";
 
@@ -34,20 +34,11 @@ export default function Signup({ onSignupSuccess, onShowLogin }) {
       const payload = { email, full_name: fullName, password, password2 };
       console.log("REGISTER payload:", payload);
 
-      const res = await axios.post(
-        "http://127.0.0.1:8000/api/users/register",
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }
-      );
+      await register(payload);
 
-      console.log("REGISTER response:", res.data);
+      console.log("REGISTER success");
       setSuccess("Account created. A verification code has been sent.");
-      if (onSignupSuccess) onSignupSuccess({ email, phoneNumber });
+      if (onSignupSuccess) onSignupSuccess(email);
     } catch (err) {
       console.error("REGISTER error:", err);
       const data = err?.response?.data;

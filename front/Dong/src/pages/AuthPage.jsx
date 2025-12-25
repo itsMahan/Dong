@@ -3,19 +3,15 @@ import Login from "./Login.jsx";
 import Signup from "./SignUp.jsx";
 import VerificationPage from "./VerificationPage.jsx";
 
-export default function AuthPage({ onLogin }) {
+export default function AuthPage() {
   const [currentView, setCurrentView] = useState("login");
   const [signupEmail, setSignupEmail] = useState("");
 
   const handleShowLogin = () => setCurrentView("login");
   const handleShowSignup = () => setCurrentView("signup");
 
-  const handleLoginSuccess = () => {
-    if (onLogin) onLogin();
-  };
-
-  const handleSignupSuccess = ({ email, phoneNumber }) => {
-    setSignupEmail(email || phoneNumber || "");
+  const handleSignupSuccess = (email) => {
+    setSignupEmail(email);
     setCurrentView("verification");
   };
 
@@ -26,7 +22,7 @@ export default function AuthPage({ onLogin }) {
   const renderView = () => {
     if (currentView === "login") {
       return (
-        <Login onLogin={handleLoginSuccess} onShowSignup={handleShowSignup} />
+        <Login onShowSignup={handleShowSignup} />
       );
     } else if (currentView === "signup") {
       return (

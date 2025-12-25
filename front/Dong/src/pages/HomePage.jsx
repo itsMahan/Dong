@@ -1,4 +1,5 @@
-import React, { useEffect, useContext, useRef } from "react";
+import React, { useEffect, useContext, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
 import ExpenseContext from "../components/ExpenseContext";
 import { ThemeContext } from "../components/ThemeContext";
 import Navbar from "../components/Navbar";
@@ -6,28 +7,24 @@ import ExpenseSplitter from "../components/ExpenseSplitter";
 import MembersPanel from "../components/MembersPanel";
 import { formatToman } from "../utils/format";
 
-export default function HomePage({
-  onLogout,
-  showLoginSuccessPopup,
-  onCloseLoginSuccessPopup,
-}) {
-  const { theme } = useContext(ThemeContext) || { theme: "light" };
-
-  const expenseCtx = useContext(ExpenseContext) || {
-    members: [],
-    transactions: [],
-  };
-  const { members = [], transactions = [] } = expenseCtx;
-  const splitterRef = useRef(null);
+export default function HomePage({ onLogout }) {
+  const { groupId } = useParams();
+  const { getGroup, groups, loading } = useContext(ExpenseContext);
+  const [group, setGroup] = useState(null);
 
   useEffect(() => {
-    if (showLoginSuccessPopup) {
-      const timer = setTimeout(() => {
-        onCloseLoginSuccessPopup();
-      }, 3000);
-      return () => clearTimeout(timer);
+    console.log("HomePage groupId:", groupId);
+    console.log("HomePage groups:", groups);
+    if (groups.length > 0) {
+      const groupData = getGroup(groupId);
+      console.log("HomePage groupData:", groupData);
+      setGroup(groupData);
     }
-  }, [showLoginSuccessPopup, onCloseLoginSuccessPopup]);
+  }, [groupId, groups, getGroup]);
+
+  const { theme } = useContext(ThemeContext) || { theme: "light" };
+
+  const splitterRef = useRef(null);
 
   const handleAddClick = () => {
     if (splitterRef.current?.openAddModal) {
@@ -36,6 +33,16 @@ export default function HomePage({
       window.dispatchEvent(new CustomEvent("openAddExpense"));
     }
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!group) {
+    return <div>Group not found</div>;
+  }
+
+  const { members = [], transactions = [] } = group;
 
   const activeTransactions = transactions.filter((t) => !t.archived);
   const totalAmount = activeTransactions.reduce(
@@ -86,10 +93,10 @@ export default function HomePage({
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold">
-              T
+              {group.name.slice(0, 1).toUpperCase()}
             </div>
             <div>
-              <h2 className="text-lg font-semibold">Group</h2>
+              <h2 className="text-lg font-semibold">{group.name}</h2>
               <div
                 className={`text-sm ${
                   theme === "light" ? "text-gray-500" : "text-gray-400"
@@ -141,13 +148,13 @@ export default function HomePage({
               </div>
 
               <div>
-                <ExpenseSplitter ref={splitterRef} />
+                <ExpenseSplitter ref={splitterRef} group={group} />
               </div>
             </div>
           </section>
 
           <aside className="lg:col-span-1 space-y-4">
-            <MembersPanel />
+            <MembersPanel group={group} />
 
             <div
               className={`${
@@ -240,18 +247,6 @@ export default function HomePage({
           />
         </svg>
       </button>
-
-      {showLoginSuccessPopup && (
-        <div className="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg z-50">
-          Welcome, you are logged in!
-          <button
-            onClick={onCloseLoginSuccessPopup}
-            className="ml-4 text-white font-bold"
-          >
-            ✕
-          </button>
-        </div>
-      )}
     </div>
   );
 }

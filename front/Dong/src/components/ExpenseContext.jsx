@@ -1,187 +1,206 @@
-import React, {
-  createContext,
-  useReducer,
-  useEffect,
-  useCallback,
-} from "react";
+import React, { createContext, useState, useEffect, useCallback } from "react";
+import * as dongsApi from "../api/dongs";
+import * as expensesApi from "../api/expenses";
+import * as membersApi from "../api/members";
 
-const STORAGE_KEY = "dong_expenses_v1";
-const BACKUP_KEY = STORAGE_KEY + "_backup";
-
-const ExpenseContext = createContext(null);
-
-const initialState = {
-  members: [],
-  transactions: [],
-};
-
-function genId() {
-  if (typeof crypto !== "undefined" && crypto.randomUUID)
-    return crypto.randomUUID();
-  return String(Date.now()) + Math.random().toString(36).slice(2, 9);
-}
-
-function reducer(state, action) {
-  console.log("[ExpenseContext] reducer action", action.type, action.payload);
-  switch (action.type) {
-    case "INIT":
-      console.log("[ExpenseContext] reducer INIT payload", action.payload);
-      return { ...state, ...action.payload };
-    case "ADD_MEMBER":
-      return { ...state, members: [...state.members, action.payload] };
-    case "UPDATE_MEMBER":
-      return {
-        ...state,
-        members: state.members.map((m) =>
-          m.id === action.payload.id ? { ...m, ...action.payload } : m
-        ),
-      };
-    case "REMOVE_MEMBER":
-      return {
-        ...state,
-        members: state.members.filter((m) => m.id !== action.payload),
-      };
-    case "ADD_TRANSACTION":
-      return {
-        ...state,
-        transactions: [action.payload, ...state.transactions],
-      };
-    case "UPDATE_TRANSACTION":
-      return {
-        ...state,
-        transactions: state.transactions.map((t) =>
-          t.id === action.payload.id ? { ...t, ...action.payload } : t
-        ),
-      };
-    case "REMOVE_TRANSACTION":
-      return {
-        ...state,
-        transactions: state.transactions.filter((t) => t.id !== action.payload),
-      };
-    case "CLEAR":
-      return { members: [], transactions: [] };
-    default:
-      return state;
-  }
-}
+const ExpenseContext = createContext({
+  groups: [],
+  loading: false,
+  error: null,
+  getGroup: (id) => {},
+  addGroup: (group) => {},
+  updateGroup: (group) => {},
+  removeGroup: (id) => {},
+  addTransaction: (groupId, tx) => {},
+  updateTransaction: (groupId, tx) => {},
+  removeTransaction: (groupId, txId) => {},
+  addMember: (groupId, member) => {},
+  removeMember: (groupId, memberName) => {},
+  fetchGroups: () => {},
+});
 
 export function ExpenseProvider({ children }) {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [groups, setGroups] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const fetchGroups = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        try {
-          const parsed = JSON.parse(raw);
-          console.log("[ExpenseContext] INIT from storage", parsed);
-          dispatch({ type: "INIT", payload: parsed });
-        } catch (err) {
-          console.error(
-            "[ExpenseContext] Failed to parse storage value, trying backup",
-            err
-          );
-          const rawBackup = localStorage.getItem(BACKUP_KEY);
-          if (rawBackup) {
-            try {
-              const parsedBackup = JSON.parse(rawBackup);
-              console.log(
-                "[ExpenseContext] Restoring from backup",
-                parsedBackup
-              );
-              dispatch({ type: "INIT", payload: parsedBackup });
-
-              localStorage.setItem(STORAGE_KEY, rawBackup);
-            } catch (err2) {
-              console.error("[ExpenseContext] Backup parse failed", err2);
-            }
-          }
-        }
-      } else {
-        console.log("[ExpenseContext] no stored state found");
-      }
-    } catch (e) {
-      console.error("[ExpenseContext] Error reading storage", e);
+      const response = await dongsApi.listDongs();
+      console.log("fetchGroups response:", response);
+      setGroups(response.data);
+    } catch (err) {
+      console.error("fetchGroups error:", err);
+      setError(err);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    try {
-      const serialized = JSON.stringify(state);
-      localStorage.setItem(STORAGE_KEY, serialized);
+    fetchGroups();
+  }, [fetchGroups]);
 
-      localStorage.setItem(BACKUP_KEY, serialized);
-      console.log("[ExpenseContext] persisted state", {
-        members: state.members.length,
-        transactions: state.transactions.length,
-      });
-    } catch (e) {
-      console.error(
-        "[ExpenseContext] Failed to persist expenses to storage",
-        e
+  const getGroup = (id) => groups.find((g) => g.id === id);
+
+  const addGroup = async (group) => {
+    setLoading(true);
+    try {
+      console.log("addGroup request:", group);
+      const newGroup = await dongsApi.createDong(group.title);
+      console.log("addGroup response:", newGroup);
+      await fetchGroups();
+    } catch (err) {
+      console.error("addGroup error:", err);
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateGroup = async (group) => {
+    setLoading(true);
+    try {
+      await dongsApi.updateDong(group.id, group.title);
+      setGroups(groups.map((g) => (g.id === group.id ? group : g)));
+    } catch (err) {
+      console.error("updateGroup error:", err);
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const removeGroup = async (id) => {
+    setLoading(true);
+    try {
+      await dongsApi.deleteDong(id);
+      setGroups(groups.filter((g) => g.id !== id));
+    } catch (err) {
+      console.error("removeGroup error:", err);
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addTransaction = async (groupId, tx) => {
+    setLoading(true);
+    try {
+      const newTx = await expensesApi.addExpense(groupId, tx);
+      setGroups(
+        groups.map((g) =>
+          g.id === groupId
+            ? { ...g, transactions: [...g.transactions, newTx.data] }
+            : g
+        )
       );
+    } catch (err) {
+      console.error("addTransaction error:", err);
+      setError(err);
+    } finally {
+      setLoading(false);
     }
-  }, [state]);
+  };
 
-  const addMember = useCallback((member) => {
-    const payload = { id: genId(), name: member.name || "Member", ...member };
-    dispatch({ type: "ADD_MEMBER", payload });
-    return payload;
-  }, []);
-
-  const updateMember = useCallback(
-    (member) => dispatch({ type: "UPDATE_MEMBER", payload: member }),
-    []
-  );
-  const removeMember = useCallback(
-    (id) => dispatch({ type: "REMOVE_MEMBER", payload: id }),
-    []
-  );
-
-  const addTransaction = useCallback((tx) => {
-    const payload = {
-      id: genId(),
-      date: new Date().toISOString(),
-      archived: false,
-      ...tx,
-    };
-    console.log("[ExpenseContext] addTransaction", payload);
-    dispatch({ type: "ADD_TRANSACTION", payload });
-    return payload;
-  }, []);
-
-  const updateTransaction = useCallback(
-    (tx) => dispatch({ type: "UPDATE_TRANSACTION", payload: tx }),
-    []
-  );
-  const removeTransaction = useCallback(
-    (id) => dispatch({ type: "REMOVE_TRANSACTION", payload: id }),
-    []
-  );
-
-  const clearAll = useCallback(() => dispatch({ type: "CLEAR" }), []);
-
-  useEffect(() => {
+  const updateTransaction = async (groupId, tx) => {
+    setLoading(true);
     try {
-      window.__DONG_EXPENSES__ = () => ({ ...state });
-    } catch (e) {}
-    return () => {
-      try {
-        delete window.__DONG_EXPENSES__;
-      } catch (e) {}
-    };
-  }, [state]);
+      await expensesApi.updateExpense(tx.id, tx);
+      setGroups(
+        groups.map((g) =>
+          g.id === groupId
+            ? {
+                ...g,
+                transactions: g.transactions.map((t) =>
+                  t.id === tx.id ? tx : t
+                ),
+              }
+            : g
+        )
+      );
+    } catch (err) {
+      console.error("updateTransaction error:", err);
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const removeTransaction = async (groupId, txId) => {
+    setLoading(true);
+    try {
+      await expensesApi.deleteExpense(txId);
+      setGroups(
+        groups.map((g) =>
+          g.id === groupId
+            ? { ...g, transactions: g.transactions.filter((t) => t.id !== txId) }
+            : g
+        )
+      );
+    } catch (err) {
+      console.error("removeTransaction error:", err);
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addMember = async (groupId, member) => {
+    setLoading(true);
+    try {
+      const newMember = await membersApi.addMember({ dong: groupId, name: member.name });
+      setGroups(
+        groups.map((g) =>
+          g.id === groupId
+            ? { ...g, members: [...g.members, newMember.data] }
+            : g
+        )
+      );
+    } catch (err) {
+      console.error("addMember error:", err);
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const removeMember = async (groupId, memberName) => {
+    setLoading(true);
+    try {
+      await membersApi.deleteMember(groupId, memberName);
+      setGroups(
+        groups.map((g) =>
+          g.id === groupId
+            ? { ...g, members: g.members.filter((m) => m.name !== memberName) }
+            : g
+        )
+      );
+    } catch (err) {
+      console.error("removeMember error:", err);
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const value = {
-    members: state.members,
-    transactions: state.transactions,
-    addMember,
-    updateMember,
-    removeMember,
+    groups,
+    loading,
+    error,
+    getGroup,
+    addGroup,
+    updateGroup,
+    removeGroup,
     addTransaction,
     updateTransaction,
     removeTransaction,
-    clearAll,
+    addMember,
+    removeMember,
+    fetchGroups,
   };
 
   return (

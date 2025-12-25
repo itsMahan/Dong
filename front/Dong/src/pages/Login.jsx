@@ -1,9 +1,9 @@
 import React, { useState, useContext } from "react";
-import axios from "axios";
+import { login } from "../api/auth";
 import { ThemeContext } from "./../components/ThemeContext";
 import Navbar from "../components/Navbar";
 
-export default function Login({ onLogin, onShowSignup }) {
+export default function Login({ onShowSignup }) {
   const { theme } = useContext(ThemeContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,20 +20,8 @@ export default function Login({ onLogin, onShowSignup }) {
 
     setLoading(true);
     try {
-      const res = await axios.post(
-        "http://127.0.0.1:8000/api/login/",
-        { email, password },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }
-      );
-
-      localStorage.setItem("access_token", res.data.access);
-      localStorage.setItem("refresh_token", res.data.refresh);
-      if (onLogin) onLogin();
+      await login({ email, password });
+      window.location.reload();
     } catch (err) {
       console.error("LOGIN error:", err);
 
