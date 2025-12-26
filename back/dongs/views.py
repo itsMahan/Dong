@@ -16,7 +16,7 @@ class DongCreateView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         serializer.save(created_by=request.user)
-        return Response({"message" : "a dongs has been created"} , status=status.HTTP_201_CREATED)
+        return Response(serializer.data , status=status.HTTP_201_CREATED)
 
 
 class DongListView(APIView):
@@ -167,7 +167,7 @@ class UpdateExpenseView(APIView):
 
         if serializer.is_valid():
             serializer.save()
-            return Response("Expense has been updated successfully", status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
