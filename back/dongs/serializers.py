@@ -7,14 +7,13 @@ class DongSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Dong
-        fields = ['title', 'members']
+        fields = ['id', 'title', 'members']
 
     def get_members(self, obj):
         # 'obj' is the Dong instance.
         # obj.members.all() gets all related DongMember objects.
         # We create a list of just their names.
-        return [member.name for member in obj.members.all()]
-
+        return [{"id": member.id, "name": member.name} for member in obj.members.all()]
 
 
 class DongMemberSerializer(serializers.ModelSerializer):
