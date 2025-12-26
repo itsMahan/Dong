@@ -34,9 +34,6 @@ function ExpenseSplitterInner({ group }, ref) {
   };
 
   const active = transactions.filter((t) => !t.archived);
-  const history = transactions
-    .filter((t) => t.archived)
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
 
   const { theme } = React.useContext(ThemeContext);
 
@@ -68,38 +65,7 @@ function ExpenseSplitterInner({ group }, ref) {
               No active transactions
             </div>
           ) : (
-            active.map((tx) => <TransactionRow key={tx.id} tx={tx} groupId={groupId} />)
-          )}
-        </div>
-      </div>
-
-      {/* History panel */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <h4 className="text-md font-semibold">History</h4>
-          <div
-            className={`text-sm ${
-              theme === "light" ? "text-gray-500" : "text-gray-400"
-            }`}
-          >
-            {history.length}
-          </div>
-        </div>
-        <div
-          className={`${
-            theme === "light" ? "bg-white" : "bg-gray-800"
-          } rounded-md shadow-sm divide-y`}
-        >
-          {history.length === 0 ? (
-            <div
-              className={`p-4 text-sm ${
-                theme === "light" ? "text-gray-500" : "text-gray-400"
-              }`}
-            >
-              No history yet
-            </div>
-          ) : (
-            history.map((tx) => <TransactionRow key={tx.id} tx={tx} groupId={groupId} />)
+            active.map((tx) => <TransactionRow key={tx.id} tx={tx} groupId={groupId} members={members} />)
           )}
         </div>
       </div>
@@ -109,6 +75,7 @@ function ExpenseSplitterInner({ group }, ref) {
         onClose={() => setIsAddOpen(false)}
         onSave={handleSaveExpense}
         members={members}
+        groupId={groupId}
       />
     </div>
   );

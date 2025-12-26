@@ -4,21 +4,16 @@ import ExpenseContext from "../components/ExpenseContext";
 import ConfirmDialog from "./ConfirmDialog";
 import { ThemeContext } from "./ThemeContext";
 import { formatToman } from "../utils/format";
+import AddExpenseModal from "./AddExpenseModal"; // Import AddExpenseModal
+import DropdownMenu from "./DropdownMenu";
 
-export default function TransactionRow({ tx }) {
+export default function TransactionRow({ tx, members }) {
   const { groupId } = useParams();
   const { updateTransaction, removeTransaction } = useContext(ExpenseContext);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false); // State for edit modal
   const { theme } = useContext(ThemeContext);
   const positive = Number(tx.amount) >= 0;
-
-  const markDone = () => {
-    updateTransaction(groupId, { ...tx, archived: true });
-  };
-
-  const restore = () => {
-    updateTransaction(groupId, { ...tx, archived: false });
-  };
 
   const handleDelete = () => {
     setConfirmOpen(true);
@@ -28,6 +23,27 @@ export default function TransactionRow({ tx }) {
     removeTransaction(groupId, tx.id);
     setConfirmOpen(false);
   };
+
+  const handleEditClick = () => {
+    setIsEditOpen(true);
+  };
+
+  const handleSaveEdit = (updatedExpense) => {
+    updateTransaction(tx.id, updatedExpense);
+    setIsEditOpen(false);
+  };
+
+  const dropdownOptions = [
+    {
+      label: "Edit",
+      onClick: handleEditClick,
+    },
+    {
+      label: "Delete",
+      onClick: handleDelete,
+      isDelete: true,
+    },
+  ];
 
   return (
     <>
@@ -60,7 +76,7 @@ export default function TransactionRow({ tx }) {
                   : "text-gray-100"
               }`}
             >
-              {tx.description || "Expense"}
+              {tx.title || "Expense"}
             </div>
             <div
               className={`text-xs ${
@@ -72,7 +88,7 @@ export default function TransactionRow({ tx }) {
           </div>
         </div>
 
-        <div className="text-right flex flex-col items-end gap-2">
+        <div className="flex items-center gap-2">
           <div
             className={`${
               positive ? "text-green-600" : "text-red-500"
@@ -81,55 +97,7 @@ export default function TransactionRow({ tx }) {
             {positive ? "+" : "-"}
             {formatToman(Math.abs(tx.amount))}
           </div>
-          <div className="flex items-center gap-2">
-            {!tx.archived ? (
-              <>
-                <button
-                  onClick={markDone}
-                  className={`${
-                    theme === "light"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-green-900/30 text-green-300"
-                  } text-sm px-2 py-1 rounded`}
-                >
-                  Done
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className={`${
-                    theme === "light"
-                      ? "border text-red-600"
-                      : "border text-red-400"
-                  } text-sm px-2 py-1 rounded`}
-                >
-                  Delete
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={restore}
-                  className={`${
-                    theme === "light"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-yellow-900/30 text-yellow-300"
-                  } text-sm px-2 py-1 rounded`}
-                >
-                  Restore
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className={`${
-                    theme === "light"
-                      ? "border text-red-600"
-                      : "border text-red-400"
-                  } text-sm px-2 py-1 rounded`}
-                >
-                  Delete
-                </button>
-              </>
-            )}
-          </div>
+          <DropdownMenu options={dropdownOptions} />
         </div>
       </div>
 
@@ -139,7 +107,7 @@ export default function TransactionRow({ tx }) {
         description={
           <span>
             This will permanently remove the transaction{" "}
-            <strong>{tx.description}</strong>. This action cannot be undone.
+            <strong>{tx.title}</strong>. This action cannot be undone.
           </span>
         }
         confirmText="Delete"
@@ -147,6 +115,16 @@ export default function TransactionRow({ tx }) {
         onConfirm={doDelete}
         onCancel={() => setConfirmOpen(false)}
       />
+
+      {isEditOpen && (
+        <AddExpenseModal
+          open={isEditOpen}
+          onClose={() => setIsEditOpen(false)}
+          onSave={handleSaveEdit}
+          members={members}
+          expenseToEdit={tx} // Pass the transaction to be edited
+        />
+      )}
     </>
   );
 }

@@ -1,4 +1,5 @@
 import React, { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "./ThemeContext";
 import ExpenseContext from "./ExpenseContext";
 
@@ -8,6 +9,7 @@ export default function CreateGroupModal({ open, onClose }) {
     const [submitting, setSubmitting] = useState(false);
     const { theme } = useContext(ThemeContext);
     const { addGroup } = useContext(ExpenseContext);
+    const navigate = useNavigate();
 
     const handleMemberChange = (index, value) => {
         const newMembers = [...members];
@@ -32,7 +34,10 @@ export default function CreateGroupModal({ open, onClose }) {
                 title: name,
                 members: members.filter((m) => m.name.trim() !== ""),
             };
-            await addGroup(group);
+            const newGroup = await addGroup(group);
+            if (newGroup) {
+                navigate(`/group/${newGroup.id}`);
+            }
             if (typeof onClose === "function") onClose();
         } catch (err) {
             console.error("CreateGroupModal submit error:", err);

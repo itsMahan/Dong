@@ -7,15 +7,41 @@ export default function AddExpenseModal({
   onClose,
   onSave,
   members = [],
+  expenseToEdit, // New prop for editing
+  groupId,
 }) {
-  const [amount, setAmount] = useState("");
-  const [description, setDescription] = useState("");
-  const [payer, setPayer] = useState(members[0]?.id ?? "");
-  const [selected, setSelected] = useState(() => members.map((m) => m.id));
+  const getPayerId = () => {
+    if (expenseToEdit && typeof expenseToEdit.paid_by === "string") {
+      const payerName = expenseToEdit.paid_by.split(" ")[0];
+      const payerMember = members.find((m) => m.name === payerName);
+      return payerMember ? payerMember.id : members[0]?.id ?? "";
+    }
+    return expenseToEdit?.paid_by || (members[0]?.id ?? "");
+  };
+
+  const getInitialSelected = () => {
+    if (expenseToEdit && expenseToEdit.participants) {
+      return expenseToEdit.participants
+        .map((pName) => {
+          const member = members.find((m) => m.name === pName);
+          return member ? member.id : null;
+        })
+        .filter((id) => id !== null);
+    }
+    return members.map((m) => m.id);
+  };
+
+  const [amount, setAmount] = useState(expenseToEdit?.amount || "");
+  const [title, setTitle] = useState(expenseToEdit?.title || "");
+  const [payer, setPayer] = useState(getPayerId());
+  const [selected, setSelected] = useState(getInitialSelected());
   const [submitting, setSubmitting] = useState(false);
 
-  const { addTransaction: ctxAddTransaction } =
-    useContext(ExpenseContext) || {};
+  const {
+    addTransaction: ctxAddTransaction,
+    updateTransaction: ctxUpdateTransaction,
+    addExpenseWithParticipants,
+  } = useContext(ExpenseContext) || {};
   const { theme } = useContext(ThemeContext) || { theme: "light" };
 
   useEffect(() => {
@@ -39,7 +65,7 @@ export default function AddExpenseModal({
       const ids = members.map((m) => m.id);
       return s.filter((id) => ids.includes(id));
     });
-  }, [members]);
+  }, [members, payer]);
 
   const toggleMember = (id) => {
     setSelected((s) =>
@@ -51,16 +77,17 @@ export default function AddExpenseModal({
     if (submitting) return;
     try {
       setSubmitting(true);
+      console.log("Amount before conversion:", amount);
       const num = Number(amount);
-      if (!amount || isNaN(num)) {
+      if (!amount || isNaN(num) || num <= 0) {
         console.warn("AddExpenseModal: invalid amount", amount);
         setSubmitting(false);
         return;
       }
       const expense = {
         amount: num,
-        description: description || "",
-        payer: payer || (members[0]?.id ?? ""),
+        title: title || "",
+        paid_by: payer || (members[0]?.id ?? ""),
         participants:
           Array.isArray(selected) && selected.length > 0
             ? selected
@@ -69,13 +96,18 @@ export default function AddExpenseModal({
         archived: false,
       };
 
-      console.log("[AddExpenseModal] submit", expense);
       if (typeof onSave === "function") {
         await Promise.resolve(onSave(expense));
-      } else if (ctxAddTransaction) {
-        ctxAddTransaction(expense);
+      } else if (expenseToEdit) {
+        // Edit mode
+        ctxUpdateTransaction(expenseToEdit.id, expense);
+      } else if (addExpenseWithParticipants) {
+        // Add mode
+        addExpenseWithParticipants(groupId, expense, selected);
       } else {
-        console.warn("No onSave and no context.addTransaction available");
+        console.warn(
+          "No onSave, expenseToEdit, and no context.addExpenseWithParticipants available"
+        );
       }
       if (typeof onClose === "function") onClose();
     } catch (err) {
@@ -96,7 +128,9 @@ export default function AddExpenseModal({
         }`}
       >
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-semibold">Add expense</h3>
+          <h3 className="text-lg font-semibold">
+            {expenseToEdit ? "Edit expense" : "Add expense"}
+          </h3>
           <button type="button" onClick={onClose} className="text-gray-600">
             ✕
           </button>
@@ -118,8 +152,8 @@ export default function AddExpenseModal({
         <div className="mb-3">
           <label className="block text-sm mb-1">Description</label>
           <input
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
             className="w-full p-2 rounded border"
             placeholder="Dinner, taxi..."
             aria-label="description"

@@ -13,11 +13,8 @@ export default function HomePage({ onLogout }) {
   const [group, setGroup] = useState(null);
 
   useEffect(() => {
-    console.log("HomePage groupId:", groupId);
-    console.log("HomePage groups:", groups);
     if (groups.length > 0) {
       const groupData = getGroup(groupId);
-      console.log("HomePage groupData:", groupData);
       setGroup(groupData);
     }
   }, [groupId, groups, getGroup]);
@@ -90,13 +87,13 @@ export default function HomePage({ onLogout }) {
       <Navbar onLogout={onLogout} />
 
       <header className="sticky top-0 z-20 bg-transparent backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-4">
+        <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col md:flex-row items-start md:items-center gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold">
-              {group.name.slice(0, 1).toUpperCase()}
+              {group.title.slice(0, 1).toUpperCase()}
             </div>
             <div>
-              <h2 className="text-lg font-semibold">{group.name}</h2>
+              <h2 className="text-lg font-semibold">{group.title}</h2>
               <div
                 className={`text-sm ${
                   theme === "light" ? "text-gray-500" : "text-gray-400"
@@ -107,11 +104,11 @@ export default function HomePage({ onLogout }) {
             </div>
           </div>
 
-          <div className="ml-auto flex items-center gap-4">
+          <div className="w-full md:w-auto ml-auto flex items-center gap-4">
             <div
               className={`${
                 theme === "light" ? "bg-white/90" : "bg-gray-800/80"
-              } rounded-lg p-3 shadow-sm text-right`}
+              } rounded-lg p-3 shadow-sm text-right w-full`}
             >
               <div
                 className={`text-sm ${
