@@ -3,10 +3,18 @@ from rest_framework import serializers
 
 
 class DongSerializer(serializers.ModelSerializer):
+    members = serializers.SerializerMethodField()
 
     class Meta:
         model = Dong
-        fields = ['title']
+        fields = ['title', 'members']
+
+    def get_members(self, obj):
+        # 'obj' is the Dong instance.
+        # obj.members.all() gets all related DongMember objects.
+        # We create a list of just their names.
+        return [member.name for member in obj.members.all()]
+
 
 
 class DongMemberSerializer(serializers.ModelSerializer):
