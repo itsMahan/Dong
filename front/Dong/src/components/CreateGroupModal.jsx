@@ -1,9 +1,11 @@
 import React, { useState, useContext } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "./ThemeContext";
 import ExpenseContext from "./ExpenseContext";
 
 export default function CreateGroupModal({ open, onClose }) {
+    const { t } = useTranslation();
     const [name, setName] = useState("");
     const [members, setMembers] = useState([{ name: "" }]);
     const [submitting, setSubmitting] = useState(false);
@@ -57,38 +59,38 @@ export default function CreateGroupModal({ open, onClose }) {
                 }`}
             >
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold">Create new Tricount</h3>
+                    <h3 className="text-xl font-semibold">{t("Create new Tricount")}</h3>
                     <button type="button" onClick={onClose} className="text-gray-600">
                         ✕
                     </button>
                 </div>
 
                 <div className="mb-4">
-                    <label className="block text-sm mb-1">Tricount name</label>
+                    <label className="block text-sm mb-1">{t("Tricount name")}</label>
                     <input
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         className="w-full p-2 rounded border"
-                        placeholder="e.g., Weekend Trip"
+                        placeholder={t("e.g., Weekend Trip")}
                     />
                 </div>
 
                 <div className="mb-4">
-                    <label className="block text-sm mb-1">Members</label>
+                    <label className="block text-sm mb-1">{t("Members")}</label>
                     {members.map((member, index) => (
                         <div key={index} className="flex items-center gap-2 mb-2">
                             <input
                                 value={member.name}
                                 onChange={(e) => handleMemberChange(index, e.target.value)}
                                 className="w-full p-2 rounded border"
-                                placeholder={`Member ${index + 1}`}
+                                placeholder={`${t("Member")} ${index + 1}`}
                             />
                             <button
                                 type="button"
                                 onClick={() => removeMember(index)}
                                 className="text-red-500"
                             >
-                                Remove
+                                {t("Remove")}
                             </button>
                         </div>
                     ))}
@@ -97,7 +99,7 @@ export default function CreateGroupModal({ open, onClose }) {
                         onClick={addMember}
                         className="text-indigo-600"
                     >
-                        + Add member
+                        {t("+ Add member")}
                     </button>
                 </div>
 
@@ -108,14 +110,14 @@ export default function CreateGroupModal({ open, onClose }) {
                         disabled={submitting}
                         className="p-2 bg-indigo-600 text-white rounded"
                     >
-                        {submitting ? "Creating..." : "Create"}
+                        {submitting ? t("Creating...") : t("Create")}
                     </button>
                     <button
                         type="button"
                         onClick={onClose}
                         className="p-2 rounded border"
                     >
-                        Cancel
+                        {t("Cancel")}
                     </button>
                 </div>
             </div>

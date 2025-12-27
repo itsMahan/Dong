@@ -1,9 +1,11 @@
 import React, { useState, useContext, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { verify, resendCode } from "../api/auth";
 import { ThemeContext } from "../components/ThemeContext";
 import Navbar from "../components/Navbar";
 
 export default function VerificationPage({ email, onVerificationSuccess }) {
+  const { t } = useTranslation();
   const { theme } = useContext(ThemeContext);
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
@@ -21,11 +23,11 @@ export default function VerificationPage({ email, onVerificationSuccess }) {
     setError("");
     setSuccess("");
     if (!email) {
-      setError("No email provided for verification.");
+      setError(t("No email provided for verification."));
       return;
     }
     if (!code) {
-      setError("Please enter the verification code.");
+      setError(t("Please enter the verification code."));
       return;
     }
 
@@ -37,7 +39,7 @@ export default function VerificationPage({ email, onVerificationSuccess }) {
       await verify(payload);
 
       console.log("VERIFY success");
-      setSuccess("Account verified. Please log in.");
+      setSuccess(t("Account verified. Please log in."));
       if (onVerificationSuccess) onVerificationSuccess();
     } catch (err) {
       console.error("VERIFY error:", err);
@@ -45,7 +47,7 @@ export default function VerificationPage({ email, onVerificationSuccess }) {
       const msg =
         serverData && Object.keys(serverData).length
           ? serverData
-          : err?.message || "Verification failed";
+          : err?.message || t("Verification failed");
       setError(typeof msg === "string" ? msg : JSON.stringify(msg));
     } finally {
       setLoadingVerify(false);
@@ -56,7 +58,7 @@ export default function VerificationPage({ email, onVerificationSuccess }) {
     setResendMsg("");
     setLoadingResend(true);
     if (!email) {
-      setResendMsg("No email provided to resend the code to.");
+      setResendMsg(t("No email provided to resend the code to."));
       setLoadingResend(false);
       return;
     }
@@ -64,14 +66,14 @@ export default function VerificationPage({ email, onVerificationSuccess }) {
       console.log("RESEND payload:", { email });
       await resendCode(email);
       console.log("RESEND success");
-      setResendMsg("A new code was sent to your email.");
+      setResendMsg(t("A new code was sent to your email."));
     } catch (err) {
       console.error("RESEND error:", err);
       const serverData = err?.response?.data;
       const msg =
         serverData && Object.keys(serverData).length
           ? serverData
-          : err?.message || "Failed to resend code";
+          : err?.message || t("Failed to resend code");
       setResendMsg(typeof msg === "string" ? msg : JSON.stringify(msg));
     } finally {
       setLoadingResend(false);
@@ -90,14 +92,14 @@ export default function VerificationPage({ email, onVerificationSuccess }) {
           onSubmit={handleSubmit}
           className="flex flex-col gap-4 w-full max-w-sm"
         >
-          <h2 className="text-2xl font-bold">Verify Your Account</h2>
+          <h2 className="text-2xl font-bold">{t("Verify Your Account")}</h2>
           <p className="text-sm">
-            A verification code has been sent to{" "}
-            <strong>{email || "(no email)"}</strong>.
+            {t("A verification code has been sent to")}{" "}
+            <strong>{email || t("(no email)")}</strong>.
           </p>
           <input
             type="text"
-            placeholder="Verification Code"
+            placeholder={t("Verification Code")}
             value={code}
             onChange={(e) => setCode(e.target.value)}
             required
@@ -111,7 +113,7 @@ export default function VerificationPage({ email, onVerificationSuccess }) {
               disabled={loadingVerify}
               className="p-2 rounded bg-blue-600 text-white"
             >
-              {loadingVerify ? "Verifying..." : "Verify"}
+              {loadingVerify ? t("Verifying...") : t("Verify")}
             </button>
             <button
               type="button"
@@ -119,7 +121,7 @@ export default function VerificationPage({ email, onVerificationSuccess }) {
               disabled={loadingResend}
               className="text-sm text-blue-500 underline"
             >
-              {loadingResend ? "Resending..." : "Resend code"}
+              {loadingResend ? t("Resending...") : t("Resend code")}
             </button>
           </div>
           {resendMsg && (

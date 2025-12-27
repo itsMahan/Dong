@@ -6,6 +6,7 @@ import App from "./App";
 import { ExpenseProvider } from "./components/ExpenseContext";
 import { ThemeProvider } from "./components/ThemeContext";
 import "./App.css";
+import "./i18n";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>

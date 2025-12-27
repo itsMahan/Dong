@@ -1,9 +1,11 @@
 import React, { useState, useContext } from "react";
+import { useTranslation } from "react-i18next";
 import { login } from "../api/auth";
 import { ThemeContext } from "./../components/ThemeContext";
 import Navbar from "../components/Navbar";
 
 export default function Login({ onShowSignup }) {
+  const { t } = useTranslation();
   const { theme } = useContext(ThemeContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,7 +16,7 @@ export default function Login({ onShowSignup }) {
     e.preventDefault();
     setError("");
     if (!email || !password) {
-      setError("Email and password are required.");
+      setError(t("Email and password are required."));
       return;
     }
 
@@ -31,13 +33,13 @@ export default function Login({ onShowSignup }) {
         typeof resp.data === "string" &&
         resp.data.startsWith("<!DOCTYPE html>")
       ) {
-        setError("Server error. Check backend logs (500).");
+        setError(t("Server error. Check backend logs (500)."));
       } else {
         const msg =
           resp?.data?.detail ||
           resp?.data ||
           err?.message ||
-          "Invalid email or password";
+          t("Invalid email or password");
         setError(typeof msg === "string" ? msg : JSON.stringify(msg));
       }
     } finally {
@@ -57,10 +59,10 @@ export default function Login({ onShowSignup }) {
           onSubmit={handleSubmit}
           className="flex flex-col gap-4 w-full max-w-sm"
         >
-          <h2 className="text-2xl font-bold">Login</h2>
+          <h2 className="text-2xl font-bold">{t("Login")}</h2>
           <input
             type="email"
-            placeholder="Email"
+            placeholder={t("Email")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -68,7 +70,7 @@ export default function Login({ onShowSignup }) {
           />
           <input
             type="password"
-            placeholder="Password"
+            placeholder={t("Password")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -80,15 +82,15 @@ export default function Login({ onShowSignup }) {
             disabled={loading}
             className="p-2 rounded bg-blue-600 text-white"
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? t("Logging in...") : t("Login")}
           </button>
           <p className="text-sm text-center mt-2">
-            Don't have an account?{" "}
+            {t("Don't have an account?")}{" "}
             <span
               className="text-blue-500 cursor-pointer"
               onClick={onShowSignup}
             >
-              Sign up
+              {t("Sign up")}
             </span>
           </p>
         </form>

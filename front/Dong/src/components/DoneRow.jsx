@@ -1,6 +1,8 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 export default function DoneRow({ doneItems = [], onToggle }) {
+  const { t } = useTranslation();
   const count = doneItems.length;
   const last = doneItems[0];
 
@@ -24,26 +26,29 @@ export default function DoneRow({ doneItems = [], onToggle }) {
             ✓
           </div>
           <div className="text-left">
-            <div className="font-medium">Done</div>
+            <div className="font-medium">{t("Done")}</div>
             <div className="text-sm text-gray-500">
               {count === 0
-                ? "No done transactions"
-                : `${count} transaction${count > 1 ? "s" : ""} — ${
-                    last?.description || ""
-                  }`}
+                ? t("No done transactions")
+                : `${count} ${
+                    count > 1 ? t("transactions") : t("transaction")
+                  } — ${last?.description || ""}`}
             </div>
           </div>
         </div>
 
         <div className="text-sm text-gray-500">
-          {expanded ? "Hide" : "Show"}
+          {expanded ? t("Hide") : t("Show")}
         </div>
       </button>
 
       {expanded && count > 0 && (
         <div className="mt-2 bg-white dark:bg-gray-800 rounded-md shadow-sm divide-y">
           {doneItems.map((tx) => (
-            <div key={tx.id} className="p-3 flex items-center justify-between">
+            <div
+              key={tx.id}
+              className="p-3 flex items-center justify-between"
+            >
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium">
                   {String(tx.payer || "U")
@@ -52,7 +57,7 @@ export default function DoneRow({ doneItems = [], onToggle }) {
                 </div>
                 <div>
                   <div className="font-medium">
-                    {tx.description || "Expense"}
+                    {tx.description || t("Expense")}
                   </div>
                   <div className="text-xs text-gray-500">
                     {new Date(tx.date).toLocaleString()}

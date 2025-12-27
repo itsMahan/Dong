@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
+import { useTranslation } from "react-i18next";
 import ExpenseContext from "../components/ExpenseContext";
 import { ThemeContext } from "./ThemeContext";
 
@@ -10,6 +11,7 @@ export default function AddExpenseModal({
   expenseToEdit, // New prop for editing
   groupId,
 }) {
+  const { t } = useTranslation();
   const getPayerId = () => {
     if (expenseToEdit && typeof expenseToEdit.paid_by === "string") {
       const payerName = expenseToEdit.paid_by.split(" ")[0];
@@ -129,7 +131,7 @@ export default function AddExpenseModal({
       >
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-semibold">
-            {expenseToEdit ? "Edit expense" : "Add expense"}
+            {expenseToEdit ? t("Edit expense") : t("Add expense")}
           </h3>
           <button type="button" onClick={onClose} className="text-gray-600">
             ✕
@@ -137,7 +139,7 @@ export default function AddExpenseModal({
         </div>
 
         <div className="mb-3">
-          <label className="block text-sm mb-1">Amount</label>
+          <label className="block text-sm mb-1">{t("Amount")}</label>
           <input
             type="number"
             step="0.01"
@@ -150,25 +152,25 @@ export default function AddExpenseModal({
         </div>
 
         <div className="mb-3">
-          <label className="block text-sm mb-1">Description</label>
+          <label className="block text-sm mb-1">{t("Description")}</label>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full p-2 rounded border"
-            placeholder="Dinner, taxi..."
+            placeholder={t("Dinner, taxi...")}
             aria-label="description"
           />
         </div>
 
         <div className="mb-3">
-          <label className="block text-sm mb-1">Paid by</label>
+          <label className="block text-sm mb-1">{t("Paid by")}</label>
           <select
             value={payer}
             onChange={(e) => setPayer(e.target.value)}
             className="w-full p-2 rounded border"
           >
             {members.length === 0 ? (
-              <option value="">No members</option>
+              <option value="">{t("No members")}</option>
             ) : (
               members.map((m) => (
                 <option key={m.id} value={m.id}>
@@ -180,7 +182,7 @@ export default function AddExpenseModal({
         </div>
 
         <div className="mb-3">
-          <div className="text-sm mb-1">Split with</div>
+          <div className="text-sm mb-1">{t("Split with")}</div>
           <div className="grid grid-cols-2 gap-2">
             {members.map((m) => (
               <label
@@ -205,14 +207,14 @@ export default function AddExpenseModal({
             disabled={submitting}
             className="p-2 bg-indigo-600 text-white rounded"
           >
-            {submitting ? "Saving..." : "Save"}
+            {submitting ? t("Saving...") : t("Save")}
           </button>
           <button
             type="button"
             onClick={onClose}
             className="p-2 rounded border"
           >
-            Cancel
+            {t("Cancel")}
           </button>
         </div>
       </div>

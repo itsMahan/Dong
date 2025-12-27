@@ -1,16 +1,27 @@
 import React, { useEffect, useContext, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import ExpenseContext from "../components/ExpenseContext";
 import { ThemeContext } from "../components/ThemeContext";
 import Navbar from "../components/Navbar";
 import ExpenseSplitter from "../components/ExpenseSplitter";
 import MembersPanel from "../components/MembersPanel";
 import { formatToman } from "../utils/format";
+import MemberDetailSummary from "../components/MemberDetailSummary";
+import MemberDetailAccordion from "../components/MemberDetailAccordion";
+import SettlementDetail from "../components/SettlementDetail";
+import SettlementDropdown from "../components/SettlementDropdown";
+import * as dongsApi from "../api/dongs";
 
 export default function HomePage({ onLogout }) {
   const { groupId } = useParams();
+  const { t } = useTranslation();
   const { getGroup, groups, loading } = useContext(ExpenseContext);
   const [group, setGroup] = useState(null);
+  const [selectedMemberName, setSelectedMemberName] = useState(null);
+  const [showSettlement, setShowSettlement] = useState(false);
+  const [showMemberDetails, setShowMemberDetails] = useState(false);
+  const [settlementData, setSettlementData] = useState(null);
 
   useEffect(() => {
     if (groups.length > 0) {
@@ -18,6 +29,20 @@ export default function HomePage({ onLogout }) {
       setGroup(groupData);
     }
   }, [groupId, groups, getGroup]);
+
+  useEffect(() => {
+    if (!groupId) return;
+
+    const fetchSettlement = async () => {
+      try {
+        const response = await dongsApi.getDongSettlement(groupId);
+        setSettlementData(response.data);
+      } catch (err) {
+        console.error("Error fetching settlement data for summary:", err);
+      }
+    };
+    fetchSettlement();
+  }, [groupId]);
 
   const { theme } = useContext(ThemeContext) || { theme: "light" };
 
@@ -99,12 +124,13 @@ export default function HomePage({ onLogout }) {
                   theme === "light" ? "text-gray-500" : "text-gray-400"
                 }`}
               >
-                {members.length} members · {activeTransactions.length} active
+                {members.length} {t("members")} · {activeTransactions.length}{" "}
+                active
               </div>
             </div>
           </div>
 
-          <div className="w-full md:w-auto ml-auto flex items-center gap-4">
+          <div className="w-full md:w-auto flex items-center ml-auto mr-auto gap-4">
             <div
               className={`${
                 theme === "light" ? "bg-white/90" : "bg-gray-800/80"
@@ -115,7 +141,7 @@ export default function HomePage({ onLogout }) {
                   theme === "light" ? "text-gray-500" : "text-gray-400"
                 }`}
               >
-                Total
+                {t("Total")}
               </div>
               <div className="text-xl font-bold text-green-600">
                 {formatToman(totalAmount)}
@@ -134,13 +160,13 @@ export default function HomePage({ onLogout }) {
               } rounded-lg shadow-sm p-4`}
             >
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-semibold">Transactions</h3>
+                <h3 className="text-lg font-semibold">{t("Transactions")}</h3>
                 <div
                   className={`text-sm ${
                     theme === "light" ? "text-gray-500" : "text-gray-400"
                   }`}
                 >
-                  All
+                  {t("All")}
                 </div>
               </div>
 
@@ -148,86 +174,49 @@ export default function HomePage({ onLogout }) {
                 <ExpenseSplitter ref={splitterRef} group={group} />
               </div>
             </div>
-          </section>
-
-          <aside className="lg:col-span-1 space-y-4">
-            <MembersPanel group={group} />
 
             <div
               className={`${
                 theme === "light" ? "bg-white" : "bg-gray-800"
-              } rounded-lg shadow-sm p-4`}
+              } rounded-lg shadow-sm p-4 my-4`}
             >
-              <h4
-                className={`text-sm ${
-                  theme === "light" ? "text-gray-500" : "text-gray-400"
-                } mb-2`}
-              >
-                Summary
-              </h4>
-              <ul className="space-y-2 text-sm">
-                <li className="flex justify-between">
-                  <span>Total</span>
-                  <strong>{totalAmount.toFixed(2)}</strong>
-                </li>
-                <li className="flex justify-between">
-                  <span>Members</span>
-                  <strong>{members.length}</strong>
-                </li>
-              </ul>
-
-              <div className="mt-4">
-                <h5
-                  className={`text-sm ${
-                    theme === "light" ? "text-gray-600" : "text-gray-300"
-                  } mb-2`}
-                >
-                  Balances
-                </h5>
-                <ul className="space-y-2">
-                  {members.length === 0 && (
-                    <li className="text-gray-500 text-sm">No members</li>
-                  )}
-                  {members.map((m) => (
-                    <li
-                      key={m.id}
-                      className="flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                            theme === "light"
-                              ? "bg-gray-200 text-gray-800"
-                              : "bg-gray-700 text-gray-100"
-                          }`}
-                        >
-                          {m.name.slice(0, 2).toUpperCase()}
-                        </div>
-                        <span>{m.name}</span>
-                      </div>
-                      <div
-                        className={`font-semibold ${
-                          balances[m.id] >= 0
-                            ? "text-green-600"
-                            : "text-red-500"
-                        }`}
-                      >
-                        {balances[m.id] >= 0 ? "+" : "-"}
-                        {Math.abs(balances[m.id] || 0).toFixed(2)}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <MemberDetailAccordion
+                members={members}
+                selectedMemberName={selectedMemberName}
+                onSelect={setSelectedMemberName}
+                theme={theme}
+                onToggle={setShowMemberDetails}
+                showDetails={showMemberDetails}
+              />
+              {showMemberDetails && selectedMemberName && (
+                <div className="mt-8">
+                  <MemberDetailSummary
+                    dongId={groupId}
+                    memberName={selectedMemberName}
+                    theme={theme}
+                  />
+                </div>
+              )}
             </div>
+
+            <SettlementDropdown
+              onToggle={setShowSettlement}
+              showSettlement={showSettlement}
+              theme={theme}
+            />
+            {showSettlement && <SettlementDetail dongId={groupId} />}
+          </section>
+
+          <aside className="lg:col-span-1 space-y-4">
+            <MembersPanel group={group} settlementData={settlementData} />
           </aside>
         </div>
       </main>
 
       <button
         onClick={handleAddClick}
-        aria-label="Add expense"
-        className="fixed right-6 bottom-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-xl z-40"
+        aria-label={t("Add expense")}
+        className="fixed left-6 bottom-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-xl z-40"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
