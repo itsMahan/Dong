@@ -5,12 +5,14 @@ import React, {
   useContext,
   useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import ExpenseContext from "../components/ExpenseContext";
 import AddExpenseModal from "./AddExpenseModal";
 import TransactionRow from "./TransactionRow";
 import { ThemeContext } from "./ThemeContext";
 
 function ExpenseSplitterInner({ group }, ref) {
+  const { t } = useTranslation();
   const { addTransaction } = useContext(ExpenseContext);
   const { id: groupId, members = [], transactions = [] } = group || {};
 
@@ -42,7 +44,7 @@ function ExpenseSplitterInner({ group }, ref) {
       {/* Active Transactions panel */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-md font-semibold">Active Transactions</h4>
+          <h4 className="text-md font-semibold">{t("Active Transactions")}</h4>
           <div
             className={`text-sm ${
               theme === "light" ? "text-gray-500" : "text-gray-400"
@@ -62,7 +64,7 @@ function ExpenseSplitterInner({ group }, ref) {
                 theme === "light" ? "text-gray-500" : "text-gray-400"
               }`}
             >
-              No active transactions
+              {t("No active transactions")}
             </div>
           ) : (
             active.map((tx) => <TransactionRow key={tx.id} tx={tx} groupId={groupId} members={members} />)

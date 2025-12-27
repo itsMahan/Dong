@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { ThemeContext } from "./ThemeContext";
 import { useContext } from "react";
 
@@ -6,11 +7,12 @@ export default function ConfirmDialog({
   open,
   title,
   description,
-  confirmText = "Delete",
-  cancelText = "Cancel",
+  confirmText,
+  cancelText,
   onConfirm,
   onCancel,
 }) {
+  const { t } = useTranslation();
   const { theme } = useContext(ThemeContext);
 
   if (!open) return null;
@@ -37,13 +39,13 @@ export default function ConfirmDialog({
             onClick={onCancel}
             className="px-3 py-2 rounded-md border bg-white dark:bg-gray-800 text-sm"
           >
-            {cancelText}
+            {cancelText || t("Cancel")}
           </button>
           <button
             onClick={onConfirm}
             className="px-3 py-2 rounded-md bg-red-600 text-white text-sm hover:bg-red-700"
           >
-            {confirmText}
+            {confirmText || t("Delete")}
           </button>
         </div>
       </div>

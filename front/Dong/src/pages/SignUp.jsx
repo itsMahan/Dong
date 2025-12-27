@@ -1,9 +1,11 @@
 import React, { useState, useContext } from "react";
+import { useTranslation } from "react-i18next";
 import { register } from "../api/auth";
 import { ThemeContext } from "./../components/ThemeContext";
 import Navbar from "../components/Navbar";
 
 export default function Signup({ onSignupSuccess, onShowLogin }) {
+  const { t } = useTranslation();
   const { theme } = useContext(ThemeContext);
 
   const [fullName, setFullName] = useState("");
@@ -21,11 +23,11 @@ export default function Signup({ onSignupSuccess, onShowLogin }) {
     setSuccess("");
 
     if (!email) {
-      setError("Email is required.");
+      setError(t("Email is required."));
       return;
     }
     if (password !== password2) {
-      setError("Passwords do not match");
+      setError(t("Passwords do not match"));
       return;
     }
 
@@ -37,7 +39,7 @@ export default function Signup({ onSignupSuccess, onShowLogin }) {
       await register(payload);
 
       console.log("REGISTER success");
-      setSuccess("Account created. A verification code has been sent.");
+      setSuccess(t("Account created. A verification code has been sent."));
       if (onSignupSuccess) onSignupSuccess(email);
     } catch (err) {
       console.error("REGISTER error:", err);
@@ -46,7 +48,7 @@ export default function Signup({ onSignupSuccess, onShowLogin }) {
         (data &&
           (data.detail || data.email || data.non_field_errors || data)) ||
         err?.message ||
-        "Failed to register";
+        t("Failed to register");
       setError(typeof msg === "string" ? msg : JSON.stringify(msg));
     } finally {
       setLoading(false);
@@ -65,10 +67,10 @@ export default function Signup({ onSignupSuccess, onShowLogin }) {
           onSubmit={handleSubmit}
           className="flex flex-col gap-4 w-full max-w-sm"
         >
-          <h2 className="text-2xl font-bold">Sign Up</h2>
+          <h2 className="text-2xl font-bold">{t("Sign Up")}</h2>
           <input
             type="text"
-            placeholder="Full name"
+            placeholder={t("Full name")}
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             required
@@ -76,7 +78,7 @@ export default function Signup({ onSignupSuccess, onShowLogin }) {
           />
           <input
             type="email"
-            placeholder="Email"
+            placeholder={t("Email")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -84,14 +86,14 @@ export default function Signup({ onSignupSuccess, onShowLogin }) {
           />
           <input
             type="tel"
-            placeholder="Phone (optional)"
+            placeholder={t("Phone (optional)")}
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
             className="p-2 rounded border"
           />
           <input
             type="password"
-            placeholder="Password"
+            placeholder={t("Password")}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -99,7 +101,7 @@ export default function Signup({ onSignupSuccess, onShowLogin }) {
           />
           <input
             type="password"
-            placeholder="Confirm password"
+            placeholder={t("Confirm password")}
             value={password2}
             onChange={(e) => setPassword2(e.target.value)}
             required
@@ -112,15 +114,15 @@ export default function Signup({ onSignupSuccess, onShowLogin }) {
             disabled={loading}
             className="p-2 rounded bg-green-600 text-white"
           >
-            {loading ? "Creating..." : "Create account"}
+            {loading ? t("Creating...") : t("Create account")}
           </button>
           <p className="text-sm text-center mt-2">
-            Already have an account?{" "}
+            {t("Already have an account?")}{" "}
             <span
               className="text-blue-500 cursor-pointer"
               onClick={onShowLogin}
             >
-              Login
+              {t("Login")}
             </span>
           </p>
         </form>

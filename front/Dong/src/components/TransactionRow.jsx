@@ -1,4 +1,5 @@
 import React, { useContext, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import ExpenseContext from "../components/ExpenseContext";
 import ConfirmDialog from "./ConfirmDialog";
@@ -8,6 +9,7 @@ import AddExpenseModal from "./AddExpenseModal"; // Import AddExpenseModal
 import DropdownMenu from "./DropdownMenu";
 
 export default function TransactionRow({ tx, members }) {
+  const { t } = useTranslation();
   const { groupId } = useParams();
   const { updateTransaction, removeTransaction } = useContext(ExpenseContext);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -35,11 +37,11 @@ export default function TransactionRow({ tx, members }) {
 
   const dropdownOptions = [
     {
-      label: "Edit",
+      label: t("Edit"),
       onClick: handleEditClick,
     },
     {
-      label: "Delete",
+      label: t("Delete"),
       onClick: handleDelete,
       isDelete: true,
     },
@@ -76,7 +78,7 @@ export default function TransactionRow({ tx, members }) {
                   : "text-gray-100"
               }`}
             >
-              {tx.title || "Expense"}
+              {tx.title || t("Expense")}
             </div>
             <div
               className={`text-xs ${
@@ -103,15 +105,15 @@ export default function TransactionRow({ tx, members }) {
 
       <ConfirmDialog
         open={confirmOpen}
-        title="Delete transaction?"
+        title={t("Delete transaction?")}
         description={
           <span>
-            This will permanently remove the transaction{" "}
-            <strong>{tx.title}</strong>. This action cannot be undone.
+            {t("This will permanently remove the transaction")}{" "}
+            <strong>{tx.title}</strong>. {t("This action cannot be undone.")}
           </span>
         }
-        confirmText="Delete"
-        cancelText="Cancel"
+        confirmText={t("Delete")}
+        cancelText={t("Cancel")}
         onConfirm={doDelete}
         onCancel={() => setConfirmOpen(false)}
       />
