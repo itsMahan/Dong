@@ -11,7 +11,7 @@ function SettlementDropdown({ onToggle, showSettlement, theme }) {
     <div className="my-4">
       <button
         onClick={handleToggle}
-        className={`w-full flex justify-between items-center px-4 py-2 text-sm font-medium rounded-lg ${
+        className={`w-full flex justify-between items-center px-4 py-2 text-sm font-medium rounded-lg cursor-pointer ${
           theme === 'light'
             ? 'bg-gray-200 hover:bg-gray-300 text-gray-800'
             : 'bg-gray-700 hover:bg-gray-600 text-white'

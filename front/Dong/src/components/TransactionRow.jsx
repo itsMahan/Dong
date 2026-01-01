@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import ExpenseContext from "../components/ExpenseContext";
@@ -6,7 +6,6 @@ import ConfirmDialog from "./ConfirmDialog";
 import { ThemeContext } from "./ThemeContext";
 import { formatToman } from "../utils/format";
 import AddExpenseModal from "./AddExpenseModal"; // Import AddExpenseModal
-import DropdownMenu from "./DropdownMenu";
 
 export default function TransactionRow({ tx, members }) {
   const { t } = useTranslation();
@@ -14,11 +13,27 @@ export default function TransactionRow({ tx, members }) {
   const { updateTransaction, removeTransaction } = useContext(ExpenseContext);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false); // State for edit modal
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { theme } = useContext(ThemeContext);
   const positive = Number(tx.amount) >= 0;
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleDelete = () => {
     setConfirmOpen(true);
+    setIsDropdownOpen(false);
   };
 
   const doDelete = () => {
@@ -28,24 +43,13 @@ export default function TransactionRow({ tx, members }) {
 
   const handleEditClick = () => {
     setIsEditOpen(true);
+    setIsDropdownOpen(false);
   };
 
   const handleSaveEdit = (updatedExpense) => {
-    updateTransaction(tx.id, updatedExpense);
+    updateTransaction(groupId, tx.id, updatedExpense);
     setIsEditOpen(false);
   };
-
-  const dropdownOptions = [
-    {
-      label: t("Edit"),
-      onClick: handleEditClick,
-    },
-    {
-      label: t("Delete"),
-      onClick: handleDelete,
-      isDelete: true,
-    },
-  ];
 
   return (
     <>
@@ -85,7 +89,7 @@ export default function TransactionRow({ tx, members }) {
                 theme === "light" ? "text-gray-500" : "text-gray-400"
               }`}
             >
-              {new Date(tx.date).toLocaleString()}
+              {tx.date ? new Date(tx.date).toLocaleString() : ""}
             </div>
           </div>
         </div>
@@ -99,7 +103,86 @@ export default function TransactionRow({ tx, members }) {
             {positive ? "+" : "-"}
             {formatToman(Math.abs(tx.amount))}
           </div>
-          <DropdownMenu options={dropdownOptions} />
+          <div className="relative inline-block text-left" ref={dropdownRef}>
+            <button
+              type="button"
+              className={`flex items-center p-2 rounded-full cursor-pointer ${
+                theme === "light"
+                  ? "text-gray-400 hover:bg-gray-100"
+                  : "text-gray-500 hover:bg-gray-700"
+              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            >
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 5v.01M12 12v.01M12 19v.01M12"
+                ></path>
+              </svg>
+            </button>
+            {isDropdownOpen && (
+              <div
+                className={`origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg z-10 ${
+                  theme === "light" ? "bg-white" : "bg-gray-800"
+                } ring-1 ring-black ring-opacity-5 focus:outline-none transition ease-out duration-100 transform ${
+                  isDropdownOpen
+                    ? "opacity-100 scale-100"
+                    : "opacity-0 scale-95"
+                }`}
+              >
+                <div className="py-1">
+                  <button
+                    onClick={handleEditClick}
+                    className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 cursor-pointer ${
+                      theme === "light"
+                        ? "text-gray-700 hover:bg-gray-100"
+                        : "text-gray-300 hover:bg-gray-700"
+                    }`}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                    </svg>
+                    {t("Edit")}
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 cursor-pointer ${
+                      theme === "light"
+                        ? "text-red-700 hover:bg-red-50"
+                        : "text-red-400 hover:bg-red-900/50"
+                    }`}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    {t("Delete")}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

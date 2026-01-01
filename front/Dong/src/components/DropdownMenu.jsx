@@ -24,31 +24,36 @@ export default function DropdownMenu({ options }) {
       <div>
         <button
           type="button"
-          className={`flex items-center text-gray-400 hover:text-gray-600 focus:outline-none`}
+          className={`flex items-center p-2 rounded-full cursor-pointer ${
+            theme === "light"
+              ? "text-gray-400 hover:bg-gray-100"
+              : "text-gray-500 hover:bg-gray-700"
+          } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
           onClick={() => setIsOpen(!isOpen)}
         >
           <svg
             className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            aria-hidden="true"
           >
             <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M12 5v.01M12 12v.01M12 19v.01M12"
-            ></path>
+              fillRule="evenodd"
+              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+              clipRule="evenodd"
+            />
           </svg>
         </button>
       </div>
 
       {isOpen && (
         <div
-          className={`origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg ${
+          className={`origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg ${
             theme === "light" ? "bg-white" : "bg-gray-800"
-          } ring-1 ring-black ring-opacity-5 divide-y divide-gray-100`}
+          } ring-1 ring-black ring-opacity-5 focus:outline-none transition ease-out duration-100 transform ${
+            isOpen ? "opacity-100 scale-100" : "opacity-0 scale-95"
+          }`}
         >
           <div className="py-1">
             {options.map((option) => (
@@ -58,12 +63,22 @@ export default function DropdownMenu({ options }) {
                   option.onClick();
                   setIsOpen(false);
                 }}
-                className={`w-full text-left px-4 py-2 text-sm ${
+                className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 cursor-pointer ${
                   option.isDelete
-                    ? "text-red-700 hover:bg-red-100 hover:text-red-900"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                    ? `
+                        ${
+                          theme === "light"
+                            ? "text-red-700 hover:bg-red-50"
+                            : "text-red-400 hover:bg-red-900/50"
+                        }`
+                    : `${
+                        theme === "light"
+                          ? "text-gray-700 hover:bg-gray-100"
+                          : "text-gray-300 hover:bg-gray-700"
+                      }`
                 }`}
               >
+                {option.icon}
                 {option.label}
               </button>
             ))}
