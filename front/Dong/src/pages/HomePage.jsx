@@ -31,7 +31,7 @@ export default function HomePage({ onLogout }) {
   }, [groupId, groups, getGroup]);
 
   useEffect(() => {
-    if (!groupId) return;
+    if (!groupId || !group) return;
 
     const fetchSettlement = async () => {
       try {
@@ -42,7 +42,7 @@ export default function HomePage({ onLogout }) {
       }
     };
     fetchSettlement();
-  }, [groupId]);
+  }, [groupId, group?.transactions]);
 
   const { theme } = useContext(ThemeContext) || { theme: "light" };
 
@@ -111,7 +111,7 @@ export default function HomePage({ onLogout }) {
     >
       <Navbar onLogout={onLogout} />
 
-      <header className="sticky top-0 z-20 bg-transparent backdrop-blur-sm">
+      <header className=" top-0 z-20 bg-transparent ">
         <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col md:flex-row items-start md:items-center gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold">

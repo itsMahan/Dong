@@ -16,6 +16,14 @@ export const deleteExpense = (id) => {
     return apiClient.delete(`/dongs/expense/delete/${id}/`);
 };
 
+export const getExpense = (id) => {
+    return apiClient.get(`/dongs/expense/detail/${id}/`);
+};
+
 export const addExpenseParticipant = (participantData) => {
     return apiClient.post("/dongs/expense_participant/add/", participantData);
+};
+
+export const removeExpenseParticipant = (expenseId, memberId) => {
+    return apiClient.delete(`/dongs/expense_participant/remove/${expenseId}/${memberId}/`);
 };

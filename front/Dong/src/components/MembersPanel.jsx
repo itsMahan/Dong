@@ -41,7 +41,7 @@ export default function MembersPanel({ group, settlementData }) {
           </h4>
           <button
             onClick={() => setIsAddMemberOpen(true)}
-            className="text-indigo-600 text-sm font-semibold"
+            className="text-indigo-600 text-sm font-semibold cursor-pointer"
           >
             {t("+ Add")}
           </button>
@@ -66,7 +66,7 @@ export default function MembersPanel({ group, settlementData }) {
               </div>
               <button
                 onClick={() => removeMember(group.id, m.name)}
-                className="text-red-500 text-xs"
+                className="text-red-500 text-xs cursor-pointer"
               >
                 {t("Remove")}
               </button>
@@ -118,13 +118,13 @@ export default function MembersPanel({ group, settlementData }) {
                       theme === "light"
                         ? "bg-gray-200 text-gray-800"
                         : "bg-gray-700 text-gray-100"
-                    }`}
-                  >
-                    {m.name.slice(0, 2).toUpperCase()}
-                  </div>
-                  <span>{m.name}</span>
+                  }`}
+                >
+                  {m.name.slice(0, 2).toUpperCase()}
                 </div>
-                <div
+                <span>{m.name}</span>
+              </div>
+              <div
                   className={`font-semibold ${
                     memberBalances[m.name] >= 0
                       ? "text-green-600"
@@ -147,3 +147,4 @@ export default function MembersPanel({ group, settlementData }) {
     </>
   );
 }
+

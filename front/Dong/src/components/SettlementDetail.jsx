@@ -41,7 +41,18 @@ function SettlementDetail({ dongId }) {
   if (!settlement) {
     return <div className="p-4 text-center">{t("No settlement details found.")}</div>;
   }
+  const formatTransaction = (description) => {
+    const parts = description.split(" ");
+    // Expected Persian format: "{debtor} باید {amount} تومان به {creditor} بپردازد"
+    // Example: "mahan باید 150.0 تومان به arman بپردازد"
+    if (parts.length < 6) return description; // Return original if format is unexpected
 
+    const debtor = parts[0];
+    const amount = parts[2];
+    const creditor = parts[5];
+
+    return `${debtor} should pay ${amount} Toman to ${creditor}`;
+  };
   return (
     <div
       className={`rounded-lg shadow-sm p-4 ${
@@ -100,7 +111,7 @@ function SettlementDetail({ dongId }) {
             </p>
             <ul>
               {settlement.summary.creditors.map((c) => (
-                <li key={c.name} className="font-semibold text-green-500">
+                <li key={c.name} className="font-semibold text-green-500 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md p-1 -mx-1">
                   {c.name}: {c.amount}
                 </li>
               ))}
@@ -147,7 +158,7 @@ function SettlementDetail({ dongId }) {
                   theme === "light" ? "text-gray-800" : "text-gray-200"
                 }`}
               >
-                {t.description}
+                {formatTransaction(t.description)}
               </p>
             </li>
           ))}

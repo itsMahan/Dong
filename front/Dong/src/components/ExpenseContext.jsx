@@ -33,18 +33,39 @@ export function ExpenseProvider({ children }) {
       const groupsWithExpenses = await Promise.all(
         response.data.map(async (group) => {
           const expensesResponse = await expensesApi.listExpenses(group.id);
+          const processedTransactions = expensesResponse.data.map((tx) => {
+            // Extract member name from "arman member of: vcafe" format
+            const payerNameMatch = tx.paid_by.match(/(.*) member of: (.*)/);
+            let payerId = null;
+            if (payerNameMatch && group.members) {
+              const payerName = payerNameMatch[1];
+              const payerMember = group.members.find(
+                (m) => m.name === payerName
+              );
+              payerId = payerMember ? payerMember.id : null;
+            }
+
+            return {
+              ...tx,
+              date: tx.created_at, // Map created_at to date
+              paid_by: payerId || tx.paid_by, // Set paid_by to ID or original string if not found
+            };
+          });
+
           return {
             ...group,
             members: group.members || [],
-            transactions: expensesResponse.data || [],
+            transactions: processedTransactions || [],
           };
         })
       );
       setGroups(groupsWithExpenses);
-    } catch (err) {
+    } catch (err)
+ {
       console.error("fetchGroups error:", err);
       setError(err);
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   }, []);
@@ -135,31 +156,10 @@ export function ExpenseProvider({ children }) {
     }
   };
 
-  const updateTransaction = async (txId, tx) => {
+  const updateTransaction = async (groupId, txId, tx) => {
     setLoading(true);
     try {
-      const updatedTx = await expensesApi.updateExpense(txId, tx);
-      const originalParticipants = updatedTx.data.participants
-        .map((p) => {
-          const member = updatedTx.data.members.find((m) => m.name === p);
-          return member ? member.id : null;
-        })
-        .filter((id) => id !== null);
-
-      const newParticipants = tx.participants;
-
-      const participantsToAdd = newParticipants.filter(
-        (p) => !originalParticipants.includes(p)
-      );
-
-      const addParticipantPromises = participantsToAdd.map((memberId) =>
-        expensesApi.addExpenseParticipant({
-          expense: updatedTx.data.id,
-          member: memberId,
-        })
-      );
-      await Promise.all(addParticipantPromises);
-
+      await expensesApi.updateExpense(txId, tx);
       await fetchGroups();
     } catch (err) {
       console.error("updateTransaction error:", err);
@@ -168,7 +168,6 @@ export function ExpenseProvider({ children }) {
       setLoading(false);
     }
   };
-
   const removeTransaction = async (groupId, txId) => {
     setLoading(true);
     try {
@@ -177,7 +176,8 @@ export function ExpenseProvider({ children }) {
     } catch (err) {
       console.error("removeTransaction error:", err);
       setError(err);
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };
