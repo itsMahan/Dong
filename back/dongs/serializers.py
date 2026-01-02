@@ -23,10 +23,17 @@ class DongMemberSerializer(serializers.ModelSerializer):
         fields = ['dong', 'name']
 
 
-class ExpenseSerializer(serializers.ModelSerializer):
-    paid_by = serializers.StringRelatedField()  # نمایش نام
+
+class DongMemberSerializerForExpense(serializers.ModelSerializer):
+    class Meta:
+        model = DongMember
+        fields = ['id', 'name']
+
+
+class ExpenseListSerializer(serializers.ModelSerializer):
+    paid_by = DongMemberSerializerForExpense()
     participants = serializers.SerializerMethodField()
-    total_amount = serializers.SerializerMethodField() # ✅ مبلغ نهایی با مالیات
+    total_amount = serializers.SerializerMethodField()
 
     class Meta:
         model = Expense
@@ -37,12 +44,39 @@ class ExpenseSerializer(serializers.ModelSerializer):
         ]
 
     def get_participants(self, obj):
-        # لیست اسامی شرکت‌کنندگان
         return [p.member.name for p in obj.participants.all()]
 
     def get_total_amount(self, obj):
-        """نمایش مبلغ نهایی با احتساب تعداد و مالیات"""
         return round(obj.get_total_amount(), 2)
+
+
+class ExpenseUpdateSerializer(serializers.ModelSerializer):
+    paid_by = serializers.PrimaryKeyRelatedField(queryset=DongMember.objects.all())
+    participants = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=DongMember.objects.all(),
+        required=False
+    )
+
+    class Meta:
+        model = Expense
+        fields = [
+            'title', 'amount', 'paid_by', 'expense_type',
+            'quantity', 'tax_percentage', 'include_tax', 'participants'
+        ]
+
+    def validate_paid_by(self, value):
+        dong = self.instance.dong
+        if value.dong != dong:
+            raise serializers.ValidationError("Paid by member must belong to the same dong.")
+        return value
+
+    def validate_participants(self, value):
+        dong = self.instance.dong
+        for member in value:
+            if member.dong != dong:
+                raise serializers.ValidationError(f"Participant {member.name} does not belong to the same dong.")
+        return value
 
 
 class ExpenseCreateSerializer(serializers.ModelSerializer):
@@ -87,15 +121,6 @@ class ExpenseCreateSerializer(serializers.ModelSerializer):
             )
 
         return data
-
-
-class ExpenseUpdateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Expense
-        fields = [
-            'title', 'amount', 'paid_by', 'expense_type',
-            'quantity', 'tax_percentage', 'include_tax'
-        ]
 
 
 class ExpenseParticipantSerializer(serializers.ModelSerializer):

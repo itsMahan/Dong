@@ -164,9 +164,9 @@ class UpdateExpenseView(APIView):
     permission_classes = [IsOwnerOrReadOnly, permissions.IsAuthenticated]
     serializer_class = ExpenseUpdateSerializer
 
-    def patch(self, request, pk):
+    def patch(self, request, expense_id):
         try:
-            expense = Expense.objects.get(id=pk)
+            expense = Expense.objects.get(id=expense_id)
         except Expense.DoesNotExist:
             return Response({"error": "No Expense has been found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -177,8 +177,21 @@ class UpdateExpenseView(APIView):
         )
 
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            participants_data = serializer.validated_data.pop('participants', None)
+            
+            instance = serializer.save()
+
+            if participants_data is not None:
+                # Delete existing participants
+                for participant in instance.participants.all():
+                    participant.delete()
+                # Add new participants
+                for member in participants_data:
+                    ExpenseParticipant.objects.create(expense=instance, member=member)
+
+            # After saving, serialize the updated data with ExpenseListSerializer
+            response_serializer = ExpenseListSerializer(instance)
+            return Response(response_serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -201,7 +214,7 @@ class ExpenseListView(APIView):
 
     def get(self, request, dong_id):
         expenses = Expense.objects.filter(dong=dong_id)
-        serializer = ExpenseSerializer(expenses, many=True)
+        serializer = ExpenseListSerializer(expenses, many=True)
         return Response(serializer.data)
 
 
