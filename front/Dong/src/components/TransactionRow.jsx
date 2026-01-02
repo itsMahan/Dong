@@ -58,7 +58,7 @@ export default function TransactionRow({ tx, members }) {
   return (
     <>
       <div
-        className={`p-4 border-b last:border-b-0 ${
+        className={`p-4 rounded-lg shadow-sm ${
           theme === "light"
             ? "bg-white text-gray-900"
             : "bg-gray-900 text-gray-100"
