@@ -26,14 +26,23 @@ class DongMemberSerializer(serializers.ModelSerializer):
 class ExpenseSerializer(serializers.ModelSerializer):
     paid_by = serializers.StringRelatedField()  # نمایش نام
     participants = serializers.SerializerMethodField()
+    total_amount = serializers.SerializerMethodField() # ✅ مبلغ نهایی با مالیات
 
     class Meta:
         model = Expense
-        fields = ['id', 'title', 'amount', 'paid_by', 'participants', 'created_at']
+        fields = [
+            'id', 'title', 'amount', 'quantity', 'tax_percentage',
+            'include_tax', 'total_amount', 'paid_by', 'participants',
+            'expense_type', 'created_at'
+        ]
 
     def get_participants(self, obj):
         # لیست اسامی شرکت‌کنندگان
         return [p.member.name for p in obj.participants.all()]
+
+    def get_total_amount(self, obj):
+        """نمایش مبلغ نهایی با احتساب تعداد و مالیات"""
+        return round(obj.get_total_amount(), 2)
 
 
 class ExpenseCreateSerializer(serializers.ModelSerializer):
@@ -44,12 +53,17 @@ class ExpenseCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Expense
-        fields = ['title', 'amount', 'paid_by', 'participants']
+        fields = [
+            'title', 'amount', 'paid_by', 'participants',
+            'expense_type', 'quantity', 'tax_percentage', 'include_tax'
+        ]
 
     def validate(self, data):
         dong_id = self.context.get('dong_id')
         paid_by = data.get('paid_by')
         participants = data.get('participants', [])
+        expense_type = data.get('expense_type', 'total')
+        quantity = data.get('quantity', 1)
 
         if paid_by.dong_id != dong_id:
             raise serializers.ValidationError(
@@ -62,13 +76,26 @@ class ExpenseCreateSerializer(serializers.ModelSerializer):
                     f"{member.name} عضو این گروه نیست!"
                 )
 
+        if expense_type == 'individual' and len(participants) == 0:
+            raise serializers.ValidationError(
+                "In Individual Expense type you must specify at least one participant"
+            )
+
+        if quantity < 1:
+            raise serializers.ValidationError(
+                "quantity must be at least 1!"
+            )
+
         return data
 
 
 class ExpenseUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expense
-        fields = ['title', 'amount', 'paid_by']
+        fields = [
+            'title', 'amount', 'paid_by', 'expense_type',
+            'quantity', 'tax_percentage', 'include_tax'
+        ]
 
 
 class ExpenseParticipantSerializer(serializers.ModelSerializer):
