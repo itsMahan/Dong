@@ -107,7 +107,7 @@ function MemberDetailSummary({ dongId, memberName, theme }) {
           >
             {t("Status")}
           </p>
-          <p className="text-lg font-semibold">{memberDetails.status}</p>
+          <p className="text-lg font-semibold">{t(memberDetails.status)}</p>
         </div>
       </div>
 
@@ -154,8 +154,9 @@ function MemberDetailSummary({ dongId, memberName, theme }) {
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
-                  {expense.title} (Paid by {expense.paid_by}): {t("Your share is")}{" "}
-                  {expense.your_share}
+                  {expense.title}{" "}
+                  {t("(Paid by {{name}})", { name: expense.paid_by })}:{" "}
+                  {t("Your share is")} {expense.your_share}
                 </li>
               ))}
             </ul>

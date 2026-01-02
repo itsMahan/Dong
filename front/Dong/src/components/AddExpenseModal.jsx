@@ -52,6 +52,7 @@ export default function AddExpenseModal({
       setSelected(getInitialSelected());
     }
   }, [open, expenseToEdit, members]);
+
   useEffect(() => {
     const handleEscape = (event) => {
       if (event.key === "Escape") {
@@ -67,6 +68,7 @@ export default function AddExpenseModal({
       document.removeEventListener("keydown", handleEscape);
     };
   }, [open, onClose]);
+
   const toggleMember = (id) => {
     setSelected((s) =>
       s.includes(id) ? s.filter((x) => x !== id) : [...s, id]
@@ -118,7 +120,7 @@ export default function AddExpenseModal({
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300 ${
+      className={`fixed inset-0 z-50 flex items-end justify-center transition-opacity duration-300 ${
         open ? "opacity-100" : "opacity-0"
       }`}
     >
@@ -128,9 +130,14 @@ export default function AddExpenseModal({
         aria-hidden="true"
       />
       <div
-        className={`relative w-full max-w-lg mx-auto rounded-lg shadow-xl transform transition-all duration-300 ${
-          open ? "scale-100 opacity-100" : "scale-95 opacity-0"
-        } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
+        className={`relative w-[calc(100%-2rem)] mx-4 md:max-w-lg md:mx-auto rounded-t-lg md:rounded-lg shadow-xl transform transition-all duration-300
+        ${
+          open
+            ? "translate-y-0 opacity-100"
+            : "translate-y-full opacity-0"
+        }
+        ${theme === "light" ? "bg-white" : "bg-gray-800"}
+        md:w-full md:mx-auto md:bottom-auto md:left-auto md:right-auto md:rounded-b-lg md:translate-y-0`}
       >
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="text-lg font-semibold">
@@ -194,7 +201,7 @@ export default function AddExpenseModal({
             <select
               value={payer}
               onChange={(e) => setPayer(e.target.value)}
-              className="w-full p-2 rounded border focus.ring-2 focus.ring-indigo-500"
+              className="w-full p-2 rounded border focus:ring-2 focus:ring-indigo-500"
             >
               {members.length === 0 ? (
                 <option value="">{t("No members")}</option>

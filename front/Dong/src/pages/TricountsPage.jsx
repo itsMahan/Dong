@@ -6,6 +6,7 @@ import ExpenseContext from "../components/ExpenseContext";
 import { Link } from "react-router-dom";
 import ConfirmDialog from "../components/ConfirmDialog";
 import EditGroupModal from "../components/EditGroupModal";
+import BottomNavbar from "../components/BottomNavbar";
 
 export default function TricountsPage({ onCreateGroup, onLogout }) {
   const { t } = useTranslation();
@@ -65,56 +66,88 @@ export default function TricountsPage({ onCreateGroup, onLogout }) {
           : "bg-gray-900 text-white"
       }`}
     >
-      <Navbar onLogout={onLogout} />
+      <div className="hidden md:block">
+        <Navbar onLogout={onLogout} />
+      </div>
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-          <h2 className="text-2xl font-semibold mb-4 md:mb-0">
-            {t("My Dongs")}
-          </h2>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+          <h1 className="text-3xl font-bold mb-4 md:mb-0">{t("My Dongs")}</h1>
           <button
             onClick={onCreateGroup}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg cursor-pointer"
+            className="hidden md:flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg cursor-pointer"
           >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              ></path>
+            </svg>
             {t("Create Dong")}
           </button>
         </div>
-        {loading && <p>Loading...</p>}
-        {error && <p className="text-red-500">{error.message}</p>}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {loading && (
+          <p className="text-center py-10">{t("Loading Dongs...")}</p>
+        )}
+        {error && (
+          <p className="text-red-500 text-center py-10">{t(error.message)}</p>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
           {Array.isArray(groups) &&
             groups.map((group) => (
               <div
                 key={group.id}
-                className={`rounded-lg shadow-sm p-4 h-full flex flex-col justify-between ${
-                  theme === "light" ? "bg-white" : "bg-gray-800"
+                className={`rounded-xl shadow-lg p-6 h-full flex flex-col justify-between transition-all duration-300 ${
+                  theme === "light"
+                    ? "bg-white hover:shadow-2xl"
+                    : "bg-gray-800 hover:bg-gray-700"
                 }`}
               >
                 <div className="flex-grow">
                   <div className="flex justify-between items-start">
                     <Link to={`/group/${group.id}`} className="flex-grow">
-                      <h3 className="text-lg font-semibold mb-2">
-                        {group.title}
-                      </h3>
-                      <p
-                        className={`text-sm ${
-                          theme === "light" ? "text-gray-500" : "text-gray-400"
-                        }`}
-                      >
+                      <h3 className="text-xl font-bold mb-2">{group.title}</h3>
+                      <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                        <svg
+                          className="w-4 h-4 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.124-1.28-.35-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.124-1.28.35-1.857m0 0a3.001 3.001 0 015.3 0m-5.3 0a3.001 3.001 0 00-5.3 0"
+                          ></path>
+                        </svg>
                         {group.members?.length || 0} {t("members")}
-                      </p>
+                      </div>
                     </Link>
-                    <div className="relative inline-block text-left" ref={dropdownRef}>
+                    <div className="relative inline-block text-left">
                       <button
                         type="button"
-                        className={`flex items-center p-2 rounded-full cursor-pointer ${
+                        className={`p-2 rounded-full cursor-pointer ${
                           theme === "light"
-                            ? "text-gray-400 hover:bg-gray-100"
-                            : "text-gray-500 hover:bg-gray-700"
-                        } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
-                        onClick={() => setOpenDropdownId(openDropdownId === group.id ? null : group.id)}
+                            ? "hover:bg-gray-100"
+                            : "hover:bg-gray-700"
+                        }`}
+                        onClick={() =>
+                          setOpenDropdownId(
+                            openDropdownId === group.id ? null : group.id
+                          )
+                        }
                       >
                         <svg
-                          className="w-5 h-5"
+                          className="w-6 h-6"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -130,22 +163,15 @@ export default function TricountsPage({ onCreateGroup, onLogout }) {
                       </button>
                       {openDropdownId === group.id && (
                         <div
-                          className={`origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg ${
+                          ref={dropdownRef}
+                          className={`origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg z-10 ${
                             theme === "light" ? "bg-white" : "bg-gray-800"
-                          } ring-1 ring-black ring-opacity-5 focus:outline-none transition ease-out duration-100 transform ${
-                            openDropdownId === group.id
-                              ? "opacity-100 scale-100"
-                              : "opacity-0 scale-95"
-                          }`}
+                          } ring-1 ring-black ring-opacity-5`}
                         >
                           <div className="py-1">
                             <button
                               onClick={() => handleEditClick(group)}
-                              className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 cursor-pointer ${
-                                theme === "light"
-                                  ? "text-gray-700 hover:bg-gray-100"
-                                  : "text-gray-300 hover:bg-gray-700"
-                              }`}
+                              className="w-full text-left px-4 py-2 text-sm flex items-center gap-3"
                             >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -159,11 +185,7 @@ export default function TricountsPage({ onCreateGroup, onLogout }) {
                             </button>
                             <button
                               onClick={() => handleDeleteClick(group)}
-                              className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 cursor-pointer ${
-                                theme === "light"
-                                  ? "text-red-700 hover:bg-red-50"
-                                  : "text-red-400 hover:bg-red-900/50"
-                              }`}
+                              className="w-full text-left px-4 py-2 text-sm flex items-center gap-3 text-red-600"
                             >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -184,22 +206,21 @@ export default function TricountsPage({ onCreateGroup, onLogout }) {
                       )}
                     </div>
                   </div>
-                  <div className="mt-4 text-right">
-                    <span className="text-sm text-gray-500">
-                      {t("Total:")}{" "}
-                    </span>
-                    <span className="font-semibold">
-                      {group.transactions?.reduce(
-                        (acc, tx) => acc + tx.amount,
-                        0
-                      ) || 0}
-                    </span>
-                  </div>
+                </div>
+                <div className="mt-6 text-right">
+                  <span className="text-base text-gray-500">$ </span>
+                  <span className="text-2xl font-bold">
+                    {group.transactions?.reduce(
+                      (acc, tx) => acc + tx.amount,
+                      0
+                    ) || 0}
+                  </span>
                 </div>
               </div>
             ))}
         </div>
       </main>
+      <BottomNavbar onCreateGroup={onCreateGroup} onLogout={onLogout} />
       <ConfirmDialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}

@@ -1,5 +1,5 @@
 import React, { useEffect, useContext, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import ExpenseContext from "../components/ExpenseContext";
 import { ThemeContext } from "../components/ThemeContext";
@@ -7,20 +7,18 @@ import Navbar from "../components/Navbar";
 import ExpenseSplitter from "../components/ExpenseSplitter";
 import MembersPanel from "../components/MembersPanel";
 import { formatToman } from "../utils/format";
-import MemberDetailSummary from "../components/MemberDetailSummary";
-import MemberDetailAccordion from "../components/MemberDetailAccordion";
+import MemberDetailList from "../components/MemberDetailList";
 import SettlementDetail from "../components/SettlementDetail";
-import SettlementDropdown from "../components/SettlementDropdown";
 import * as dongsApi from "../api/dongs";
+import BottomNavbar from "../components/BottomNavbar";
+import Tabs from "../components/Tabs";
+import SummaryPanel from "../components/SummaryPanel";
 
 export default function HomePage({ onLogout }) {
   const { groupId } = useParams();
   const { t } = useTranslation();
   const { getGroup, groups, loading } = useContext(ExpenseContext);
   const [group, setGroup] = useState(null);
-  const [selectedMemberName, setSelectedMemberName] = useState(null);
-  const [showSettlement, setShowSettlement] = useState(false);
-  const [showMemberDetails, setShowMemberDetails] = useState(false);
   const [settlementData, setSettlementData] = useState(null);
 
   useEffect(() => {
@@ -57,11 +55,19 @@ export default function HomePage({ onLogout }) {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div>{t("Loading...")}</div>
+      </div>
+    );
   }
 
   if (!group) {
-    return <div>Group not found</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div>{t("Group not found")}</div>
+      </div>
+    );
   }
 
   const { members = [], transactions = [] } = group;
@@ -72,34 +78,31 @@ export default function HomePage({ onLogout }) {
     0
   );
 
-  const computeBalances = () => {
-    const bal = {};
-    members.forEach((m) => (bal[m.id] = 0));
-
-    activeTransactions.forEach((t) => {
-      const amt = Number(t.amount || 0);
-      const parts =
-        Array.isArray(t.participants) && t.participants.length > 0
-          ? t.participants
-          : members.map((m) => m.id);
-      const share = parts.length ? amt / parts.length : 0;
-
-      if (t.payer && bal[t.payer] !== undefined) {
-        bal[t.payer] += amt - share;
-      }
-
-      parts.forEach((pid) => {
-        if (bal[pid] === undefined) bal[pid] = 0;
-        if (pid !== t.payer) {
-          bal[pid] -= share;
-        }
-      });
-    });
-
-    return bal;
-  };
-
-  const balances = computeBalances();
+  const tabs = [
+    {
+      label: "Transactions",
+      content: (
+        <>
+          <div className="mb-4">
+            <SummaryPanel group={group} settlementData={settlementData} />
+          </div>
+          <ExpenseSplitter ref={splitterRef} group={group} />
+        </>
+      ),
+    },
+    {
+      label: "Members",
+      content: <MembersPanel group={group} settlementData={settlementData} />,
+    },
+    {
+      label: "Details",
+      content: <MemberDetailList dongId={groupId} members={members} />,
+    },
+    {
+      label: "Settlement",
+      content: <SettlementDetail dongId={groupId} />,
+    },
+  ];
 
   return (
     <div
@@ -109,114 +112,86 @@ export default function HomePage({ onLogout }) {
           : "bg-gray-900 text-white"
       }`}
     >
-      <Navbar onLogout={onLogout} />
+      <div className="hidden md:block">
+        <Navbar onLogout={onLogout} />
+      </div>
 
-      <header className=" top-0 z-20 bg-transparent ">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col md:flex-row items-start md:items-center gap-4">
+      <header className="md:top-0 md:z-20 md:bg-transparent p-4">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold">
+            <div className="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-xl">
               {group.title.slice(0, 1).toUpperCase()}
             </div>
             <div>
-              <h2 className="text-lg font-semibold">{group.title}</h2>
-              <div
-                className={`text-sm ${
-                  theme === "light" ? "text-gray-500" : "text-gray-400"
-                }`}
-              >
-                {members.length} {t("members")} · {activeTransactions.length}{" "}
-                active
+              <h1 className="text-2xl font-bold">{group.title}</h1>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                {members.length} {t("members")} {activeTransactions.length}{" "}
+                {t("active")}
               </div>
             </div>
           </div>
-
-          <div className="w-full md:w-auto flex items-center ml-auto mr-auto gap-4">
-            <div
-              className={`${
-                theme === "light" ? "bg-white/90" : "bg-gray-800/80"
-              } rounded-lg p-3 shadow-sm text-right w-full`}
-            >
-              <div
-                className={`text-sm ${
-                  theme === "light" ? "text-gray-500" : "text-gray-400"
-                }`}
-              >
-                {t("Total")}
-              </div>
-              <div className="text-xl font-bold text-green-600">
-                {formatToman(totalAmount)}
-              </div>
+          <div className="text-right">
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              {t("Total Expenses")}
+            </div>
+            <div className="text-2xl font-bold text-green-500">
+              {formatToman(totalAmount)}
             </div>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <section className="lg:col-span-2">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-6 pb-20">
+        <div className="hidden lg:grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <section className="lg:col-span-2 space-y-6">
             <div
               className={`${
                 theme === "light" ? "bg-white" : "bg-gray-800"
               } rounded-lg shadow-sm p-4`}
             >
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-semibold">{t("Transactions")}</h3>
-                <div
-                  className={`text-sm ${
-                    theme === "light" ? "text-gray-500" : "text-gray-400"
-                  }`}
-                >
-                  {t("All")}
-                </div>
-              </div>
-
-              <div>
-                <ExpenseSplitter ref={splitterRef} group={group} />
-              </div>
+              <h3 className="text-lg font-semibold mb-3">
+                {t("Transactions")}
+              </h3>
+              <ExpenseSplitter ref={splitterRef} group={group} />
             </div>
-
             <div
               className={`${
                 theme === "light" ? "bg-white" : "bg-gray-800"
-              } rounded-lg shadow-sm p-4 my-4`}
+              } rounded-lg shadow-sm p-4`}
             >
-              <MemberDetailAccordion
-                members={members}
-                selectedMemberName={selectedMemberName}
-                onSelect={setSelectedMemberName}
-                theme={theme}
-                onToggle={setShowMemberDetails}
-                showDetails={showMemberDetails}
-              />
-              {showMemberDetails && selectedMemberName && (
-                <div className="mt-8">
-                  <MemberDetailSummary
-                    dongId={groupId}
-                    memberName={selectedMemberName}
-                    theme={theme}
-                  />
-                </div>
-              )}
+              <h3 className="text-lg font-semibold mb-3">{t("Details")}</h3>
+              <MemberDetailList dongId={groupId} members={members} />
             </div>
-
-            <SettlementDropdown
-              onToggle={setShowSettlement}
-              showSettlement={showSettlement}
-              theme={theme}
-            />
-            {showSettlement && <SettlementDetail dongId={groupId} />}
+            <div
+              className={`${
+                theme === "light" ? "bg-white" : "bg-gray-800"
+              } rounded-lg shadow-sm p-4`}
+            >
+              <h3 className="text-lg font-semibold mb-3">{t("Settlement")}</h3>
+              <SettlementDetail dongId={groupId} />
+            </div>
           </section>
-
           <aside className="lg:col-span-1 space-y-4">
+            <SummaryPanel group={group} settlementData={settlementData} />
             <MembersPanel group={group} settlementData={settlementData} />
           </aside>
         </div>
+        <div className="lg:hidden">
+          <Tabs tabs={tabs} t={t} />
+        </div>
       </main>
 
+      <div className="md:hidden">
+        <BottomNavbar
+          onCreateGroup={handleAddClick}
+          onLogout={onLogout}
+          backTo="/"
+        />
+      </div>
       <button
         onClick={handleAddClick}
         aria-label={t("Add expense")}
-        className="fixed left-6 bottom-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-xl z-40"
+        className="hidden md:flex fixed left-6 bottom-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-14 h-14 items-center justify-center shadow-xl z-40"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

@@ -56,7 +56,7 @@ function ExpenseSplitterInner({ group }, ref) {
         <div
           className={`${
             theme === "light" ? "bg-white" : "bg-gray-800"
-          } rounded-md shadow-sm divide-y`}
+          } rounded-md shadow-sm space-y-3`}
         >
           {active.length === 0 ? (
             <div
