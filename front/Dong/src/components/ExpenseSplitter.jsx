@@ -43,20 +43,13 @@ function ExpenseSplitterInner({ group }, ref) {
     <div className={`${theme === "light" ? "text-gray-900" : "text-gray-100"}`}>
       {/* Active Transactions panel */}
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <h4 className="text-md font-semibold">{t("Active Transactions")}</h4>
-          <div
-            className={`text-sm ${
-              theme === "light" ? "text-gray-500" : "text-gray-400"
-            }`}
-          >
-            {active.length}
-          </div>
+        <div className="flex items-center justify-between mb-2 px-4">
+          <h4 className="text-md font-semibold">{t("Active Expenses")}</h4>
         </div>
         <div
           className={`${
             theme === "light" ? "bg-white" : "bg-gray-800"
-          } rounded-md shadow-sm space-y-3`}
+          } rounded-md shadow-sm space-y-3 p-4`}
         >
           {active.length === 0 ? (
             <div
@@ -64,7 +57,7 @@ function ExpenseSplitterInner({ group }, ref) {
                 theme === "light" ? "text-gray-500" : "text-gray-400"
               }`}
             >
-              {t("No active transactions")}
+              {t("No active expenses")}
             </div>
           ) : (
             active.map((tx) => <TransactionRow key={tx.id} tx={tx} groupId={groupId} members={members} />)

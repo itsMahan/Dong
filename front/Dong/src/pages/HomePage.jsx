@@ -16,10 +16,12 @@ import SummaryPanel from "../components/SummaryPanel";
 
 export default function HomePage({ onLogout }) {
   const { groupId } = useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { getGroup, groups, loading } = useContext(ExpenseContext);
   const [group, setGroup] = useState(null);
   const [settlementData, setSettlementData] = useState(null);
+  const [activeTabIndex, setActiveTabIndex] = useState(0); // New state for active tab
+  const isRtl = i18n.dir() === "rtl";
 
   useEffect(() => {
     if (groups.length > 0) {
@@ -80,12 +82,9 @@ export default function HomePage({ onLogout }) {
 
   const tabs = [
     {
-      label: "Transactions",
+      label: "Expenses",
       content: (
         <>
-          <div className="mb-4">
-            <SummaryPanel group={group} settlementData={settlementData} />
-          </div>
           <ExpenseSplitter ref={splitterRef} group={group} />
         </>
       ),
@@ -124,9 +123,40 @@ export default function HomePage({ onLogout }) {
             </div>
             <div>
               <h1 className="text-2xl font-bold">{group.title}</h1>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                {members.length} {t("members")} {activeTransactions.length}{" "}
-                {t("active")}
+              <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                <div className="flex items-center">
+                  {members.length}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    fill="currentColor"
+                    className={`bi bi-people-fill w-4 h-4 ${isRtl ? "mr-1" : "ml-1"}`}
+                    viewBox="0 0 16 16"
+                  >
+                    <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+                    <path
+                      fillRule="evenodd"
+                      d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"
+                    />
+                    <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
+                  </svg>
+                </div>
+                <div className={`flex items-center ${isRtl ? "mr-2" : "ml-2"}`}>
+                  {activeTransactions.length}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-4 w-4 ${isRtl ? "mr-1" : "ml-1"}`}
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
@@ -147,10 +177,10 @@ export default function HomePage({ onLogout }) {
             <div
               className={`${
                 theme === "light" ? "bg-white" : "bg-gray-800"
-              } rounded-lg shadow-sm p-4`}
+              } rounded-lg shadow-sm`}
             >
-              <h3 className="text-lg font-semibold mb-3">
-                {t("Transactions")}
+              <h3 className="text-lg font-semibold mb-3 p-4">
+                {t("Expenses")}
               </h3>
               <ExpenseSplitter ref={splitterRef} group={group} />
             </div>
@@ -172,12 +202,11 @@ export default function HomePage({ onLogout }) {
             </div>
           </section>
           <aside className="lg:col-span-1 space-y-4">
-            <SummaryPanel group={group} settlementData={settlementData} />
             <MembersPanel group={group} settlementData={settlementData} />
           </aside>
         </div>
         <div className="lg:hidden">
-          <Tabs tabs={tabs} t={t} />
+          <Tabs tabs={tabs} t={t} onTabChange={setActiveTabIndex} />
         </div>
       </main>
 
@@ -186,28 +215,31 @@ export default function HomePage({ onLogout }) {
           onCreateGroup={handleAddClick}
           onLogout={onLogout}
           backTo="/"
+          activeTabIndex={activeTabIndex} // Pass activeTabIndex to BottomNavbar
         />
       </div>
-      <button
-        onClick={handleAddClick}
-        aria-label={t("Add expense")}
-        className="hidden md:flex fixed left-6 bottom-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-14 h-14 items-center justify-center shadow-xl z-40"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+      {activeTabIndex === 0 && ( // Conditionally render the desktop button
+        <button
+          onClick={handleAddClick}
+          aria-label={t("Add expense")}
+          className="hidden md:flex fixed left-6 bottom-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-14 h-14 items-center justify-center shadow-xl z-40"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
-      </button>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }

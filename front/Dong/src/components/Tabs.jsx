@@ -1,9 +1,16 @@
 import React, { useState, useContext } from "react";
 import { ThemeContext } from "./ThemeContext";
 
-export default function Tabs({ tabs, t }) {
+export default function Tabs({ tabs, t, onTabChange }) {
   const [activeTab, setActiveTab] = useState(0);
   const { theme } = useContext(ThemeContext);
+
+  const handleTabClick = (index) => {
+    setActiveTab(index);
+    if (onTabChange) {
+      onTabChange(index);
+    }
+  };
 
   return (
     <div>
@@ -15,7 +22,7 @@ export default function Tabs({ tabs, t }) {
         {tabs.map((tab, index) => (
           <button
             key={index}
-            onClick={() => setActiveTab(index)}
+            onClick={() => handleTabClick(index)}
             className={`py-2 px-4 text-sm font-medium ${
               activeTab === index
                 ? `border-b-2 border-indigo-600 ${

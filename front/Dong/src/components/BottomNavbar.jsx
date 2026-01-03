@@ -4,7 +4,7 @@ import { ThemeContext } from "./ThemeContext";
 import { Link } from "react-router-dom";
 import BurgerMenu from "./BurgerMenu";
 
-export default function BottomNavbar({ onCreateGroup, onLogout, backTo }) {
+export default function BottomNavbar({ onCreateGroup, onLogout, backTo, activeTabIndex }) {
   const { t } = useTranslation();
   const { theme } = useContext(ThemeContext);
   const [isBurgerMenuOpen, setBurgerMenuOpen] = useState(false);
@@ -48,25 +48,27 @@ export default function BottomNavbar({ onCreateGroup, onLogout, backTo }) {
           </div>
 
           <div className="w-1/3 flex justify-center">
-            <button
-              onClick={onCreateGroup}
-              className="flex flex-col items-center justify-center text-white bg-indigo-600 rounded-full w-14 h-14 -mt-4 shadow-lg"
-            >
-              <svg
-                className="w-8 h-8"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
+            {(activeTabIndex === undefined || activeTabIndex === 0) && (
+              <button
+                onClick={onCreateGroup}
+                className="flex flex-col items-center justify-center text-white bg-indigo-600 rounded-full w-14 h-14 -mt-4 shadow-lg"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 4v16m8-8H4"
-                ></path>
-              </svg>
-            </button>
+                <svg
+                  className="w-8 h-8"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 4v16m8-8H4"
+                  ></path>
+                </svg>
+              </button>
+            )}
           </div>
 
           <div className="w-1/3 flex justify-end">

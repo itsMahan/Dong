@@ -8,7 +8,7 @@ import { formatToman } from "../utils/format";
 import AddExpenseModal from "./AddExpenseModal"; // Import AddExpenseModal
 
 export default function TransactionRow({ tx, members }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { groupId } = useParams();
   const { updateTransaction, removeTransaction } = useContext(ExpenseContext);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -18,6 +18,7 @@ export default function TransactionRow({ tx, members }) {
   const { theme } = useContext(ThemeContext);
   const positive = Number(tx.amount) >= 0;
   const dropdownRef = useRef(null);
+  const isRtl = i18n.dir() === "rtl";
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -66,17 +67,6 @@ export default function TransactionRow({ tx, members }) {
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
-                theme === "light"
-                  ? "bg-gray-200 text-gray-800"
-                  : "bg-gray-800 text-gray-100"
-              }`}
-            >
-              {String(tx.payer || "U")
-                .slice(0, 2)
-                .toUpperCase()}
-            </div>
             <div>
               <div
                 className={`font-medium ${
@@ -135,7 +125,9 @@ export default function TransactionRow({ tx, members }) {
               </button>
               {isDropdownOpen && (
                 <div
-                  className={`origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg z-10 ${
+                  className={`${
+                    isRtl ? "origin-top-left left-0" : "origin-top-right right-0"
+                  } absolute mt-2 w-48 rounded-md shadow-lg z-10 ${
                     theme === "light" ? "bg-white" : "bg-gray-800"
                   } ring-1 ring-black ring-opacity-5 focus:outline-none transition ease-out duration-100 transform ${
                     isDropdownOpen
@@ -193,11 +185,24 @@ export default function TransactionRow({ tx, members }) {
         <div className="mt-2">
           <button
             onClick={() => setShowParticipants(!showParticipants)}
-            className="text-xs text-gray-500"
+            className="text-xs text-gray-500 flex items-center"
           >
-            {t("Split between {{count}} people", {
-              count: numParticipants,
-            })}
+            {numParticipants}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              className={`bi bi-people-fill w-4 h-4 ${isRtl ? "mr-1" : "ml-1"}`}
+              viewBox="0 0 16 16"
+            >
+              <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
+              <path
+                fillRule="evenodd"
+                d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"
+              />
+              <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
+            </svg>
           </button>
           {showParticipants && (
             <div className="mt-2 flex flex-wrap gap-2">
@@ -228,10 +233,10 @@ export default function TransactionRow({ tx, members }) {
 
       <ConfirmDialog
         open={confirmOpen}
-        title={t("Delete transaction?")}
+        title={t("Delete expense?")}
         description={
           <span>
-            {t("This will permanently remove the transaction")}{" "}
+            {t("This will permanently remove the expense")}{" "}
             <strong>{tx.title}</strong>. {t("This action cannot be undone.")}
           </span>
         }
