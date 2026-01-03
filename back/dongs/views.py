@@ -3,7 +3,6 @@ from rest_framework.views import APIView
 from rest_framework import permissions, status
 from .serializers import *
 from .permissions import IsOwnerOrReadOnly
-from decimal import Decimal
 
 
 class DongCreateView(APIView):
@@ -17,7 +16,7 @@ class DongCreateView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         serializer.save(created_by=request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data , status=status.HTTP_201_CREATED)
 
 
 class DongListView(APIView):
@@ -37,6 +36,7 @@ class DongDeleteView(APIView):
             dong = Dong.objects.get(id=pk)
         except Dong.DoesNotExist:
             return Response({"error": "No Dong has been found"}, status=status.HTTP_404_NOT_FOUND)
+        # Enforce object-level permissions
         self.check_object_permissions(request, dong)
         dong.delete()
         return Response("dong has been deleted successfully", status=status.HTTP_200_OK)
@@ -53,11 +53,12 @@ class DongUpdateView(APIView):
             return Response({"error": "No Dong has been found"}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = DongSerializer(
-            dong,
+            dong,                  # instance to update
             data=request.data,
-            partial=True
+            partial=True           # allow partial update
         )
 
+        # Enforce object-level permissions
         self.check_object_permissions(request, dong)
         if serializer.is_valid():
             serializer.save()
@@ -77,8 +78,8 @@ class AddDongMemberView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         if DongMember.objects.filter(
-                dong=serializer.validated_data['dong'],
-                name=serializer.validated_data['name'],
+            dong = serializer.validated_data['dong'],
+            name = serializer.validated_data['name'],
         ).exists():
             return Response("A member with this name already exists in this dong.", status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -101,22 +102,20 @@ class DeleteDongMember(APIView):
 
         try:
             member = DongMember.objects.get(
-                dong=dong,
-                name=member_name,
+                dong = dong,
+                name = member_name,
             )
         except DongMember.DoesNotExist:
             return Response({"error": "No Dong Member has been found"}, status=status.HTTP_404_NOT_FOUND)
 
+        # self.check_object_permissions(request, member)
         member.delete()
         return Response("dong member has been deleted successfully", status=status.HTTP_200_OK)
 
 
 class AddExpenseView(APIView):
-    """
-    ✅ اضافه کردن expense - با پشتیبانی از تعداد و مالیات
-    """
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = ExpenseCreateSerializer
+    serializer_class = ExpenseCreateSerializer  # ✅ تغییر
 
     def post(self, request, dong_id):
         try:
@@ -124,14 +123,14 @@ class AddExpenseView(APIView):
         except Dong.DoesNotExist:
             return Response({"error": "Dong not found"}, status=404)
 
-        serializer = ExpenseCreateSerializer(
+        serializer = ExpenseCreateSerializer(  # ✅ تغییر
             data=request.data,
             context={'dong_id': dong_id}
         )
 
         if serializer.is_valid():
+            # ✅ جدا کردن participants قبل از save
             participants = serializer.validated_data.pop('participants')
-            expense_type = serializer.validated_data.get('expense_type', 'total')
 
             # ذخیره expense
             expense = serializer.save(
@@ -139,23 +138,13 @@ class AddExpenseView(APIView):
                 created_by=request.user
             )
 
-            # اضافه کردن participants
             for member in participants:
                 ExpenseParticipant.objects.create(
                     expense=expense,
                     member=member
                 )
 
-            return Response({
-                "message": f"Expense created successfully (type: {expense_type})",
-                "expense_id": expense.id,
-                "expense_type": expense_type,
-                "base_amount": expense.amount,
-                "quantity": expense.quantity,
-                "tax_percentage": float(expense.tax_percentage),
-                "include_tax": expense.include_tax,
-                "total_amount": round(expense.get_total_amount(), 2)
-            }, status=201)
+            return Response({"message": "Expense created"}, status=201)
 
         return Response(serializer.errors, status=400)
 
@@ -164,34 +153,21 @@ class UpdateExpenseView(APIView):
     permission_classes = [IsOwnerOrReadOnly, permissions.IsAuthenticated]
     serializer_class = ExpenseUpdateSerializer
 
-    def patch(self, request, expense_id):
+    def patch(self, request, pk):
         try:
-            expense = Expense.objects.get(id=expense_id)
+            expense = Expense.objects.get(id=pk)
         except Expense.DoesNotExist:
             return Response({"error": "No Expense has been found"}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = ExpenseUpdateSerializer(
-            expense,
+        serializer = ExpenseSerializer(
+            expense,  # instance to update
             data=request.data,
-            partial=True
+            partial=True  # allow partial update
         )
 
         if serializer.is_valid():
-            participants_data = serializer.validated_data.pop('participants', None)
-            
-            instance = serializer.save()
-
-            if participants_data is not None:
-                # Delete existing participants
-                for participant in instance.participants.all():
-                    participant.delete()
-                # Add new participants
-                for member in participants_data:
-                    ExpenseParticipant.objects.create(expense=instance, member=member)
-
-            # After saving, serialize the updated data with ExpenseListSerializer
-            response_serializer = ExpenseListSerializer(instance)
-            return Response(response_serializer.data, status=status.HTTP_200_OK)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -208,13 +184,12 @@ class DeleteExpenseView(APIView):
         expense.delete()
         return Response("expense has been deleted successfully", status=status.HTTP_200_OK)
 
-
 class ExpenseListView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, dong_id):
         expenses = Expense.objects.filter(dong=dong_id)
-        serializer = ExpenseListSerializer(expenses, many=True)
+        serializer = ExpenseSerializer(expenses, many=True)
         return Response(serializer.data)
 
 
@@ -229,11 +204,10 @@ class AddExpenseParticipantView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         if ExpenseParticipant.objects.filter(
-                expense=serializer.validated_data['expense'],
-                member=serializer.validated_data['member'],
+            expense = serializer.validated_data['expense'],
+            member = serializer.validated_data['member'],
         ).exists():
-            return Response("An expense participant with this name already exists in this expense.",
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response("An expense participant with this name already exists in this expense.", status=status.HTTP_400_BAD_REQUEST)
         else:
             ExpenseParticipant.objects.create(
                 expense=serializer.validated_data['expense'],
@@ -242,10 +216,57 @@ class AddExpenseParticipantView(APIView):
         return Response("Expense participant added successfully", status=status.HTTP_200_OK)
 
 
+# class BalanceView(APIView):
+#     permission_classes = [permissions.IsAuthenticated]
+#
+#     def get(self, request, dong_id):
+#         try:
+#             dong = Dong.objects.get(id=dong_id)
+#         except Dong.DoesNotExist:
+#             return Response({"error": "Dong not found"}, status=404)
+#
+#         # همه اعضا
+#         members = dong.members.all()
+#
+#         # محاسبه برای هر عضو
+#         balances = []
+#         for member in members:
+#             # چقدر پرداخت کرده
+#             paid = dong.expenses.filter(paid_by=member).aggregate(
+#                 total=models.Sum('amount')
+#             )['total'] or 0
+#
+#             # در چه هزینه‌هایی شرکت داشته
+#             participated_expenses = ExpenseParticipant.objects.filter(
+#                 member=member,
+#                 expense__dong=dong
+#             )
+#
+#             # سهمش از هر هزینه
+#             should_pay = 0
+#             for participation in participated_expenses:
+#                 expense = participation.expense
+#                 # تعداد شرکت‌کننده‌های این هزینه
+#                 participants_count = expense.participants.count()
+#                 # سهم این عضو = مبلغ کل / تعداد شرکت‌کننده‌ها
+#                 share = expense.amount / participants_count
+#                 should_pay += share
+#
+#             # تسویه = پرداخت شده - سهم
+#             balance = paid - should_pay
+#
+#             balances.append({
+#                 "member": member.name,
+#                 "paid": paid,
+#                 "should_pay": should_pay,
+#                 "balance": balance,
+#                 "status": "طلبکار" if balance > 0 else "بدهکار" if balance < 0 else "تسویه"
+#             })
+#
+#         return Response(balances)
+
 class BalanceView(APIView):
-    """
-    ✅ محاسبه balance با احتساب تعداد و مالیات
-    """
+    """نمایش balance هر عضو - چقدر پرداخت کرده، چقدر باید بپردازد، بدهکار یا طلبکار"""
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, dong_id):
@@ -258,9 +279,10 @@ class BalanceView(APIView):
         balances = []
 
         for member in members:
-            # چقدر پرداخت کرده (با احتساب تعداد و مالیات)
-            paid_expenses = dong.expenses.filter(paid_by=member)
-            paid = sum(exp.get_total_amount() for exp in paid_expenses)
+            # چقدر پرداخت کرده
+            paid = dong.expenses.filter(paid_by=member).aggregate(
+                total=models.Sum('amount')
+            )['total'] or 0
 
             # سهمش از هزینه‌ها
             participated_expenses = ExpenseParticipant.objects.filter(
@@ -268,26 +290,18 @@ class BalanceView(APIView):
                 expense__dong=dong
             )
 
-            should_pay = Decimal('0')
+            should_pay = 0
             expense_details = []
 
             for participation in participated_expenses:
                 expense = participation.expense
                 participants_count = expense.participants.count()
-
-                # محاسبه مبلغ کل با تعداد و مالیات
-                total_amount = expense.get_total_amount()
-                share = Decimal(total_amount) / Decimal(participants_count)
+                share = expense.amount / participants_count
                 should_pay += share
 
                 expense_details.append({
                     "expense_title": expense.title,
-                    "base_amount": expense.amount,
-                    "quantity": expense.quantity,
-                    "tax_percentage": float(expense.tax_percentage),
-                    "include_tax": expense.include_tax,
-                    "total_amount": round(total_amount, 2),
-                    "expense_type": expense.expense_type,
+                    "total_amount": expense.amount,
                     "participants_count": participants_count,
                     "your_share": round(share, 2),
                     "paid_by": expense.paid_by.name
@@ -311,9 +325,7 @@ class BalanceView(APIView):
 
 
 class SettlementView(APIView):
-    """
-    ✅ الگوریتم تسویه بهبود یافته - هر بدهکار به طلبکارهای مختلف پول میده
-    """
+    """محاسبه دقیق تسویه - چه کسی به چه کسی چقدر باید بده"""
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, dong_id):
@@ -324,75 +336,71 @@ class SettlementView(APIView):
 
         members = dong.members.all()
 
-        # محاسبه balance هر نفر با احتساب تعداد و مالیات
+        # محاسبه balance هر نفر
         member_balances = {}
         for member in members:
-            paid_expenses = dong.expenses.filter(paid_by=member)
-            paid = sum(exp.get_total_amount() for exp in paid_expenses)
+            paid = dong.expenses.filter(paid_by=member).aggregate(
+                total=models.Sum('amount')
+            )['total'] or 0
 
             participated_expenses = ExpenseParticipant.objects.filter(
                 member=member,
                 expense__dong=dong
             )
 
-            should_pay = Decimal('0')
+            should_pay = 0
             for participation in participated_expenses:
                 expense = participation.expense
                 participants_count = expense.participants.count()
-                total_amount = expense.get_total_amount()
-                share = Decimal(total_amount) / Decimal(participants_count)
+                share = expense.amount / participants_count
                 should_pay += share
 
             balance = paid - should_pay
-            member_balances[member.name] = float(round(balance, 2))
+            member_balances[member.name] = round(balance, 2)
 
-        # ✅ الگوریتم بهبود یافته: جداسازی طلبکاران و بدهکاران
-        creditors = [(name, bal) for name, bal in member_balances.items() if bal > 0]
-        debtors = [(name, abs(bal)) for name, bal in member_balances.items() if bal < 0]
+        # جدا کردن طلبکاران و بدهکاران
+        creditors = {name: bal for name, bal in member_balances.items() if bal > 0}
+        debtors = {name: abs(bal) for name, bal in member_balances.items() if bal < 0}
 
-        # مرتب‌سازی برای بهینه‌سازی
-        creditors.sort(key=lambda x: x[1], reverse=True)
-        debtors.sort(key=lambda x: x[1], reverse=True)
-
+        # الگوریتم تسویه با کمترین تراکنش
         transactions = []
 
-        # ✅ الگوریتم Greedy برای کمترین تعداد تراکنش
-        creditor_idx = 0
-        debtor_idx = 0
+        creditors_list = list(creditors.items())
+        debtors_list = list(debtors.items())
 
-        creditor_remaining = list(creditors)  # کپی برای تغییر
-        debtor_remaining = list(debtors)
+        i, j = 0, 0
+        while i < len(creditors_list) and j < len(debtors_list):
+            creditor_name, creditor_amount = creditors_list[i]
+            debtor_name, debtor_amount = debtors_list[j]
 
-        while creditor_idx < len(creditor_remaining) and debtor_idx < len(debtor_remaining):
-            creditor_name, creditor_amount = creditor_remaining[creditor_idx]
-            debtor_name, debtor_amount = debtor_remaining[debtor_idx]
+            # کمترین مقدار بین طلب و بدهی
+            amount = min(creditor_amount, debtor_amount)
 
-            # حداقل مقدار قابل تسویه
-            settle_amount = min(creditor_amount, debtor_amount)
-
-            if settle_amount > 0.01:  # فقط مبالغ معنادار
-                transactions.append({
-                    "from": debtor_name,
-                    "to": creditor_name,
-                    "amount": round(settle_amount, 2),
-                    "description": f"{debtor_name} باید {round(settle_amount, 2)} تومان به {creditor_name} بپردازد"
-                })
+            transactions.append({
+                "from": debtor_name,
+                "to": creditor_name,
+                "amount": round(amount, 2),
+                "description": f"{debtor_name} باید {round(amount, 2)} تومان به {creditor_name} بپردازد"
+            })
 
             # به‌روزرسانی مقادیر
-            creditor_remaining[creditor_idx] = (creditor_name, creditor_amount - settle_amount)
-            debtor_remaining[debtor_idx] = (debtor_name, debtor_amount - settle_amount)
+            creditors_list[i] = (creditor_name, creditor_amount - amount)
+            debtors_list[j] = (debtor_name, debtor_amount - amount)
 
-            # حرکت به بعدی اگر تسویه شد
-            if creditor_remaining[creditor_idx][1] < 0.01:
-                creditor_idx += 1
-            if debtor_remaining[debtor_idx][1] < 0.01:
-                debtor_idx += 1
+            # اگر طلبکار تسویه شد، برو به بعدی
+            if creditors_list[i][1] == 0:
+                i += 1
+
+            # اگر بدهکار تسویه شد، برو به بعدی
+            if debtors_list[j][1] == 0:
+                j += 1
 
         # خلاصه
         summary = {
-            "total_expenses": round(sum(exp.get_total_amount() for exp in dong.expenses.all()), 2),
-            "creditors": [{"name": name, "amount": round(amt, 2)} for name, amt in creditors],
-            "debtors": [{"name": name, "amount": round(amt, 2)} for name, amt in debtors],
+            "total_expenses": round(
+                sum(member_balances.values()) + sum(abs(v) for v in member_balances.values() if v < 0), 2),
+            "creditors": [{"name": name, "amount": round(amt, 2)} for name, amt in creditors.items()],
+            "debtors": [{"name": name, "amount": round(amt, 2)} for name, amt in debtors.items()],
             "total_transactions": len(transactions)
         }
 
@@ -405,7 +413,7 @@ class SettlementView(APIView):
 
 
 class MemberDetailView(APIView):
-    """✅ جزئیات کامل یک عضو با احتساب تعداد و مالیات"""
+    """جزئیات کامل یک عضو - چه هزینه‌هایی پرداخت کرده، در چه هزینه‌هایی شرکت داشته"""
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, dong_id, member_name):
@@ -422,24 +430,17 @@ class MemberDetailView(APIView):
         # هزینه‌هایی که این عضو پرداخت کرده
         paid_expenses = dong.expenses.filter(paid_by=member)
         paid_list = []
-        total_paid = Decimal('0')
+        total_paid = 0
 
         for expense in paid_expenses:
             participants = [p.member.name for p in expense.participants.all()]
-            total_amount = expense.get_total_amount()
-
             paid_list.append({
                 "title": expense.title,
-                "base_amount": expense.amount,
-                "quantity": expense.quantity,
-                "tax_percentage": float(expense.tax_percentage),
-                "include_tax": expense.include_tax,
-                "total_amount": round(total_amount, 2),
-                "expense_type": expense.expense_type,
+                "amount": expense.amount,
                 "participants": participants,
                 "date": expense.created_at
             })
-            total_paid += total_amount
+            total_paid += expense.amount
 
         # هزینه‌هایی که در آن‌ها شرکت داشته
         participated = ExpenseParticipant.objects.filter(
@@ -448,23 +449,17 @@ class MemberDetailView(APIView):
         )
 
         participated_list = []
-        total_share = Decimal('0')
+        total_share = 0
 
         for participation in participated:
             expense = participation.expense
             participants_count = expense.participants.count()
-            total_amount = expense.get_total_amount()
-            share = Decimal(total_amount) / Decimal(participants_count)
+            share = expense.amount / participants_count
             total_share += share
 
             participated_list.append({
                 "title": expense.title,
-                "base_amount": expense.amount,
-                "quantity": expense.quantity,
-                "tax_percentage": float(expense.tax_percentage),
-                "include_tax": expense.include_tax,
-                "total_amount": round(total_amount, 2),
-                "expense_type": expense.expense_type,
+                "total_amount": expense.amount,
                 "paid_by": expense.paid_by.name,
                 "participants_count": participants_count,
                 "your_share": round(share, 2),
