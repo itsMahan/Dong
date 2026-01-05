@@ -80,6 +80,7 @@ class ExpenseUpdateSerializer(serializers.ModelSerializer):
 
 
 class ExpenseCreateSerializer(serializers.ModelSerializer):
+    paid_by = serializers.PrimaryKeyRelatedField(queryset=DongMember.objects.all())
     participants = serializers.PrimaryKeyRelatedField(
         many=True,
         queryset=DongMember.objects.all()

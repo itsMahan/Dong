@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { ThemeContext } from "./ThemeContext";
 import { Link } from "react-router-dom";
@@ -8,6 +8,13 @@ export default function BottomNavbar({ onCreateGroup, onLogout, backTo, activeTa
   const { t } = useTranslation();
   const { theme } = useContext(ThemeContext);
   const [isBurgerMenuOpen, setBurgerMenuOpen] = useState(false);
+  const addButtonRef = useRef(null);
+
+  const handleCreateGroup = () => {
+    if (addButtonRef.current) {
+      onCreateGroup(addButtonRef);
+    }
+  };
 
   const handleBurgerMenuClose = () => {
     setBurgerMenuOpen(false);
@@ -50,7 +57,8 @@ export default function BottomNavbar({ onCreateGroup, onLogout, backTo, activeTa
           <div className="w-1/3 flex justify-center">
             {(activeTabIndex === undefined || activeTabIndex === 0) && (
               <button
-                onClick={onCreateGroup}
+                ref={addButtonRef}
+                onClick={handleCreateGroup}
                 className="flex flex-col items-center justify-center text-white bg-indigo-600 rounded-full w-14 h-14 -mt-4 shadow-lg"
               >
                 <svg

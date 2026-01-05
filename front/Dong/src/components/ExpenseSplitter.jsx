@@ -10,6 +10,7 @@ import ExpenseContext from "../components/ExpenseContext";
 import AddExpenseModal from "./AddExpenseModal";
 import TransactionRow from "./TransactionRow";
 import { ThemeContext } from "./ThemeContext";
+import ChooseExpenseTypeModal from "./ChooseExpenseTypeModal";
 
 function ExpenseSplitterInner({ group }, ref) {
   const { t } = useTranslation();
@@ -17,22 +18,41 @@ function ExpenseSplitterInner({ group }, ref) {
   const { id: groupId, members = [], transactions = [] } = group || {};
 
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isChooseTypeOpen, setIsChooseTypeOpen] = useState(false);
+  const [selectedExpenseType, setSelectedExpenseType] = useState("total");
+  const [addButtonRef, setAddButtonRef] = useState(null);
 
   useImperativeHandle(ref, () => ({
-    openAddModal: () => setIsAddOpen(true),
-    closeAddModal: () => setIsAddOpen(false),
+    openAddModal: (buttonRef) => {
+      setAddButtonRef(buttonRef);
+      setIsChooseTypeOpen(true);
+    },
+    closeAddModal: () => {
+      setIsAddOpen(false);
+      setIsChooseTypeOpen(false);
+    },
   }));
 
   useEffect(() => {
-    const handler = () => setIsAddOpen(true);
+    const handler = (event) => {
+      if (event.detail?.buttonRef) {
+        setAddButtonRef(event.detail.buttonRef);
+      }
+      setIsChooseTypeOpen(true);
+    };
     window.addEventListener("openAddExpense", handler);
     return () => window.removeEventListener("openAddExpense", handler);
   }, []);
 
   const handleSaveExpense = (expense) => {
-    console.log("[ExpenseSplitter] saving expense", expense);
-    addTransaction(groupId, expense);
+    addTransaction(groupId, { ...expense, expense_type: selectedExpenseType });
     setIsAddOpen(false);
+  };
+
+  const handleTypeSelect = (type) => {
+    setSelectedExpenseType(type);
+    setIsChooseTypeOpen(false);
+    setIsAddOpen(true);
   };
 
   const active = transactions.filter((t) => !t.archived);
@@ -65,12 +85,20 @@ function ExpenseSplitterInner({ group }, ref) {
         </div>
       </div>
 
+      <ChooseExpenseTypeModal
+        open={isChooseTypeOpen}
+        onClose={() => setIsChooseTypeOpen(false)}
+        onSelect={handleTypeSelect}
+        buttonRef={addButtonRef}
+      />
+
       <AddExpenseModal
         open={isAddOpen}
         onClose={() => setIsAddOpen(false)}
         onSave={handleSaveExpense}
         members={members}
         groupId={groupId}
+        expenseType={selectedExpenseType}
       />
     </div>
   );
