@@ -22,6 +22,7 @@ export default function HomePage({ onLogout }) {
   const [settlementData, setSettlementData] = useState(null);
   const [activeTabIndex, setActiveTabIndex] = useState(0); // New state for active tab
   const isRtl = i18n.dir() === "rtl";
+  const desktopAddButtonRef = useRef(null);
 
   useEffect(() => {
     if (groups.length > 0) {
@@ -48,11 +49,12 @@ export default function HomePage({ onLogout }) {
 
   const splitterRef = useRef(null);
 
-  const handleAddClick = () => {
+  const handleAddClick = (buttonRef) => {
     if (splitterRef.current?.openAddModal) {
-      splitterRef.current.openAddModal();
+      splitterRef.current.openAddModal(buttonRef);
     } else {
-      window.dispatchEvent(new CustomEvent("openAddExpense"));
+      const event = new CustomEvent("openAddExpense", { detail: { buttonRef } });
+      window.dispatchEvent(event);
     }
   };
 
@@ -220,7 +222,8 @@ export default function HomePage({ onLogout }) {
       </div>
       {activeTabIndex === 0 && ( // Conditionally render the desktop button
         <button
-          onClick={handleAddClick}
+          ref={desktopAddButtonRef}
+          onClick={() => handleAddClick(desktopAddButtonRef)}
           aria-label={t("Add expense")}
           className="hidden md:flex fixed left-6 bottom-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-14 h-14 items-center justify-center shadow-xl z-40"
         >

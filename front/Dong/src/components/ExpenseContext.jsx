@@ -17,7 +17,7 @@ const ExpenseContext = createContext({
   addMember: (groupId, member) => {},
   removeMember: (groupId, memberName) => {},
   fetchGroups: () => {},
-  addExpenseWithParticipants: (groupId, expense, participants) => {},
+  addExpenseWithParticipants: (groupId, expense) => {},
 });
 
 export function ExpenseProvider({ children }) {
@@ -32,31 +32,45 @@ export function ExpenseProvider({ children }) {
       const response = await dongsApi.listDongs();
       const groupsWithExpenses = await Promise.all(
         response.data.map(async (group) => {
-          const expensesResponse = await expensesApi.listExpenses(group.id);
-          const processedTransactions = expensesResponse.data.map((tx) => {
-            // Extract member name from "arman member of: vcafe" format
-            const payerNameMatch = tx.paid_by.match(/(.*) member of: (.*)/);
-            let payerId = null;
-            if (payerNameMatch && group.members) {
-              const payerName = payerNameMatch[1];
-              const payerMember = group.members.find(
-                (m) => m.name === payerName
-              );
-              payerId = payerMember ? payerMember.id : null;
-            }
+          try {
+            const expensesResponse = await expensesApi.listExpenses(group.id);
+            const processedTransactions = expensesResponse.data.map((tx) => {
+              let payerId = null;
+              if (typeof tx.paid_by === 'string') {
+                const payerNameMatch = tx.paid_by.match(/(.*) member of: (.*)/);
+                if (payerNameMatch && group.members) {
+                  const payerName = payerNameMatch[1];
+                  const payerMember = group.members.find(
+                    (m) => m.name === payerName
+                  );
+                  payerId = payerMember ? payerMember.id : null;
+                }
+              } else if (tx.paid_by && typeof tx.paid_by === 'object') {
+                // If paid_by is already an object with an id, use it
+                payerId = tx.paid_by.id;
+              }
+
+              return {
+                ...tx,
+                date: tx.created_at, // Map created_at to date
+                paid_by: payerId || tx.paid_by, 
+              };
+            });
 
             return {
-              ...tx,
-              date: tx.created_at, // Map created_at to date
-              paid_by: payerId || tx.paid_by, // Set paid_by to ID or original string if not found
+              ...group,
+              members: group.members || [],
+              transactions: processedTransactions || [],
             };
-          });
-
-          return {
-            ...group,
-            members: group.members || [],
-            transactions: processedTransactions || [],
-          };
+          } catch (err) {
+            console.error(`Failed to fetch expenses for group ${group.id}:`, err);
+            return {
+              ...group,
+              members: group.members || [],
+              transactions: [],
+              error: "Failed to load expenses",
+            };
+          }
         })
       );
       setGroups(groupsWithExpenses);
@@ -105,7 +119,8 @@ export function ExpenseProvider({ children }) {
     } catch (err) {
       console.error("updateGroup error:", err);
       setError(err);
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };
@@ -118,7 +133,8 @@ export function ExpenseProvider({ children }) {
     } catch (err) {
       console.error("removeGroup error:", err);
       setError(err);
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };
@@ -129,29 +145,24 @@ export function ExpenseProvider({ children }) {
       await expensesApi.addExpense(groupId, tx);
       await fetchGroups();
     } catch (err) {
-      console.error("addTransaction error:", err);
+      console.error("addTransaction error:", err.response ? err.response.data : err);
       setError(err);
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };
 
-  const addExpenseWithParticipants = async (groupId, expense, participants) => {
+  const addExpenseWithParticipants = async (groupId, expense) => {
     setLoading(true);
     try {
-      const newTx = await expensesApi.addExpense(groupId, expense);
-      const participantPromises = participants.map((memberId) =>
-        expensesApi.addExpenseParticipant({
-          expense: newTx.data.id,
-          member: memberId,
-        })
-      );
-      await Promise.all(participantPromises);
+      await expensesApi.addExpense(groupId, expense);
       await fetchGroups();
     } catch (err) {
       console.error("addExpenseWithParticipants error:", err);
       setError(err);
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };
@@ -164,7 +175,8 @@ export function ExpenseProvider({ children }) {
     } catch (err) {
       console.error("updateTransaction error:", err);
       setError(err);
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };
@@ -190,7 +202,8 @@ export function ExpenseProvider({ children }) {
     } catch (err) {
       console.error("addMember error:", err);
       setError(err);
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };
@@ -203,7 +216,8 @@ export function ExpenseProvider({ children }) {
     } catch (err) {
       console.error("removeMember error:", err);
       setError(err);
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };
@@ -231,3 +245,4 @@ export function ExpenseProvider({ children }) {
 }
 
 export default ExpenseContext;
+
