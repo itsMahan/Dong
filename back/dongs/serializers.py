@@ -84,6 +84,7 @@ class ExpenseCreateSerializer(serializers.ModelSerializer):
         many=True,
         queryset=DongMember.objects.all()
     )
+    paid_by = serializers.PrimaryKeyRelatedField(queryset=DongMember.objects.all())
 
     class Meta:
         model = Expense
