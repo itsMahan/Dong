@@ -1,26 +1,22 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React, { useState, useContext } from "react";
 import { ThemeContext } from "./ThemeContext";
 
 export default function DropdownMenu({ options }) {
   const [isOpen, setIsOpen] = useState(false);
   const { theme } = useContext(ThemeContext);
-  const dropdownRef = useRef(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  const handleBlur = (event) => {
+    if (!event.currentTarget.contains(event.relatedTarget)) {
+      setIsOpen(false);
+    }
+  };
 
   return (
-    <div className="relative inline-block text-left" ref={dropdownRef}>
+    <div
+      className="relative inline-block text-left"
+      onBlur={handleBlur}
+      tabIndex={0}
+    >
       <div>
         <button
           type="button"
@@ -60,7 +56,9 @@ export default function DropdownMenu({ options }) {
               <button
                 key={option.label}
                 onClick={() => {
-                  option.onClick();
+                  if (option.onClick) {
+                    option.onClick();
+                  }
                   setIsOpen(false);
                 }}
                 className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 cursor-pointer ${

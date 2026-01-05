@@ -4,7 +4,7 @@ import { login } from "../api/auth";
 import { ThemeContext } from "./../components/ThemeContext";
 import Navbar from "../components/Navbar";
 
-export default function Login({ onShowSignup }) {
+export default function Login({ onShowSignup, onLogin }) {
   const { t } = useTranslation();
   const { theme } = useContext(ThemeContext);
   const [email, setEmail] = useState("");
@@ -22,8 +22,10 @@ export default function Login({ onShowSignup }) {
 
     setLoading(true);
     try {
-      await login({ email, password });
-      window.location.reload();
+      const data = await login({ email, password });
+      if (onLogin && data.user) {
+        onLogin(data.user);
+      }
     } catch (err) {
       console.error("LOGIN error:", err);
 
@@ -51,22 +53,22 @@ export default function Login({ onShowSignup }) {
     <div
       className={`min-h-screen ${
         theme === "light" ? "bg-white" : "bg-gray-900"
-      } text-black`}
+      } dark:text-white text-black`}
     >
-      <Navbar />
+      <Navbar minimal={true} />
       <div className="flex items-center justify-center p-8">
         <form
           onSubmit={handleSubmit}
           className="flex flex-col gap-4 w-full max-w-sm"
         >
-          <h2 className="text-2xl font-bold">{t("Login")}</h2>
+          <h2 className="text-2xl font-bold dark:text-white">{t("Login")}</h2>
           <input
             type="email"
             placeholder={t("Email")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="p-2 rounded border"
+            className="p-2 rounded border dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400"
           />
           <input
             type="password"
@@ -74,7 +76,7 @@ export default function Login({ onShowSignup }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="p-2 rounded border"
+            className="p-2 rounded border dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400"
           />
           {error && <p className="text-red-500">{error}</p>}
           <button
@@ -84,10 +86,10 @@ export default function Login({ onShowSignup }) {
           >
             {loading ? t("Logging in...") : t("Login")}
           </button>
-          <p className="text-sm text-center mt-2">
+          <p className="text-sm text-center mt-2 dark:text-gray-400">
             {t("Don't have an account?")}{" "}
             <span
-              className="text-blue-500 cursor-pointer"
+              className="text-blue-500 cursor-pointer dark:text-blue-400"
               onClick={onShowSignup}
             >
               {t("Sign up")}

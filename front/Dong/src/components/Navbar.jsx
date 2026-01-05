@@ -4,7 +4,7 @@ import { ThemeContext } from "./ThemeContext";
 import LanguageSwitcher from "./LanguageSwitcher";
 import DropdownMenu from "./DropdownMenu";
 
-export default function Navbar({ onLogout }) {
+export default function Navbar({ onLogout, minimal }) {
   const { t } = useTranslation();
   const { theme, toggleTheme } = useContext(ThemeContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -81,207 +81,211 @@ export default function Navbar({ onLogout }) {
       style={{ direction: "ltr" }}
     >
       <h1 className="text-xl font-bold cursor-default">{t("Dong")}</h1>
-      <div className="hidden md:flex items-center gap-4">
-        <LanguageSwitcher />
-        <label className="flex cursor-pointer gap-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="5" />
-            <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
-          </svg>
-          <input
-            type="checkbox"
-            value="synthwave"
-            className="toggle theme-controller"
-            onChange={toggleTheme}
-            checked={theme === "dark"}
-          />
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-          </svg>
-        </label>
-        {onLogout && <DropdownMenu options={getDropdownOptions()} />}
-      </div>
-      <div className="md:hidden">
-        <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="cursor-pointer">
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M4 6h16M4 12h16m-7 6h7"
-            ></path>
-          </svg>
-        </button>
-      </div>
-      {isMenuOpen && (
-        <div
-          className="md:hidden fixed inset-0 bg-black/30 z-50"
-          onClick={() => setIsMenuOpen(false)}
-        >
-          <div
-            className={`fixed top-0 right-0 h-full w-64 p-4 transition-transform transform flex flex-col ${
-              isMenuOpen ? "translate-x-0" : "translate-x-full"
-            } ${
-              theme === "light" ? "bg-white" : "bg-gray-800"
-            }`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-between items-center mb-4">
-              <LanguageSwitcher />
-              <button onClick={() => setIsMenuOpen(false)}>
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  ></path>
-                </svg>
-              </button>
-            </div>
-            <div className="flex flex-col flex-grow">
-              <div className="flex flex-col gap-4 flex-grow">
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                  }}
-                  className="w-full text-left py-2 px-2 rounded-lg text-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center gap-2"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                  {t("Account")}{" "}
-                  <span className="text-sm text-gray-500">
-                    ({t("Coming Soon")})
-                  </span>
-                </button>
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                  }}
-                  className="w-full text-left py-2 px-2 rounded-lg text-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center gap-2"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.608 3.292 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                  {t("Settings")}{" "}
-                  <span className="text-sm text-gray-500">
-                    ({t("Coming Soon")})
-                  </span>
-                </button>
-              </div>
-              {onLogout && (
-                <div className="mt-auto flex items-center justify-between">
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      onLogout();
-                    }}
-                    className={logoutButtonClasses}
-                  >
-                    {t("Logout")}
-                  </button>
-                  <label className="flex cursor-pointer gap-2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="12" cy="12" r="5" />
-                      <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
-                    </svg>
-                    <input
-                      type="checkbox"
-                      value="synthwave"
-                      className="toggle theme-controller"
-                      onChange={toggleTheme}
-                      checked={theme === "dark"}
-                    />
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                    </svg>
-                  </label>
-                </div>
-              )}
-            </div>
+      {!minimal && (
+        <>
+          <div className="hidden md:flex items-center gap-4">
+            <LanguageSwitcher />
+            <label className="flex cursor-pointer gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="5" />
+                <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
+              </svg>
+              <input
+                type="checkbox"
+                value="synthwave"
+                className="toggle theme-controller"
+                onChange={toggleTheme}
+                checked={theme === "dark"}
+              />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+            </label>
+            {onLogout && <DropdownMenu options={getDropdownOptions()} />}
           </div>
-        </div>
+          <div className="md:hidden">
+            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="cursor-pointer">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16m-7 6h7"
+                ></path>
+              </svg>
+            </button>
+          </div>
+          {isMenuOpen && (
+            <div
+              className="md:hidden fixed inset-0 bg-black/30 z-50"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <div
+                className={`fixed top-0 right-0 h-full w-64 p-4 transition-transform transform flex flex-col ${
+                  isMenuOpen ? "translate-x-0" : "translate-x-full"
+                } ${
+                  theme === "light" ? "bg-white" : "bg-gray-800"
+                }`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex justify-between items-center mb-4">
+                  <LanguageSwitcher />
+                  <button onClick={() => setIsMenuOpen(false)}>
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      ></path>
+                    </svg>
+                  </button>
+                </div>
+                <div className="flex flex-col flex-grow">
+                  <div className="flex flex-col gap-4 flex-grow">
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full text-left py-2 px-2 rounded-lg text-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                      {t("Account")}{" "}
+                      <span className="text-sm text-gray-500">
+                        ({t("Coming Soon")})
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full text-left py-2 px-2 rounded-lg text-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center gap-2"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.608 3.292 0z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                      {t("Settings")}{" "}
+                      <span className="text-sm text-gray-500">
+                        ({t("Coming Soon")})
+                      </span>
+                    </button>
+                  </div>
+                  {onLogout && (
+                    <div className="mt-auto flex items-center justify-between">
+                      <button
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          onLogout();
+                        }}
+                        className={logoutButtonClasses}
+                      >
+                        {t("Logout")}
+                      </button>
+                      <label className="flex cursor-pointer gap-2">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <circle cx="12" cy="12" r="5" />
+                          <path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
+                        </svg>
+                        <input
+                          type="checkbox"
+                          value="synthwave"
+                          className="toggle theme-controller"
+                          onChange={toggleTheme}
+                          checked={theme === "dark"}
+                        />
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                      </label>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </nav>
   );

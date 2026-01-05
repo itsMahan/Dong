@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import * as membersApi from "../api/members";
+import { formatToman } from "../utils/format";
 
 function MemberDetailSummary({ dongId, memberName, theme }) {
   const { t } = useTranslation();
@@ -68,7 +69,7 @@ function MemberDetailSummary({ dongId, memberName, theme }) {
             {t("Total Paid")}
           </p>
           <p className="text-lg font-semibold text-green-600">
-            {memberDetails.total_paid}
+            {formatToman(memberDetails.total_paid)}
           </p>
         </div>
         <div>
@@ -80,7 +81,7 @@ function MemberDetailSummary({ dongId, memberName, theme }) {
             {t("Total Share")}
           </p>
           <p className="text-lg font-semibold text-red-500">
-            {memberDetails.total_share}
+            {formatToman(memberDetails.total_share)}
           </p>
         </div>
         <div>
@@ -96,7 +97,7 @@ function MemberDetailSummary({ dongId, memberName, theme }) {
               memberDetails.balance >= 0 ? "text-green-600" : "text-red-500"
             }`}
           >
-            {memberDetails.balance}
+            {formatToman(memberDetails.balance)}
           </p>
         </div>
         <div>
@@ -107,7 +108,7 @@ function MemberDetailSummary({ dongId, memberName, theme }) {
           >
             {t("Status")}
           </p>
-          <p className="text-lg font-semibold">{memberDetails.status}</p>
+          <p className="text-lg font-semibold">{t(memberDetails.status)}</p>
         </div>
       </div>
 
@@ -129,7 +130,7 @@ function MemberDetailSummary({ dongId, memberName, theme }) {
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
-                  {expense.title}: {expense.amount}
+                  {expense.title}: {formatToman(expense.amount)}
                 </li>
               ))}
             </ul>
@@ -154,8 +155,9 @@ function MemberDetailSummary({ dongId, memberName, theme }) {
                     theme === "light" ? "text-gray-700" : "text-gray-300"
                   }`}
                 >
-                  {expense.title} (Paid by {expense.paid_by}): {t("Your share is")}{" "}
-                  {expense.your_share}
+                  {expense.title}{" "}
+                  {t("(Paid by {{name}})", { name: expense.paid_by })}:{" "}
+                  {t("Your share is")} {formatToman(expense.your_share)}
                 </li>
               ))}
             </ul>

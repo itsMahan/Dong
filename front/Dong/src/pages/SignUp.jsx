@@ -59,22 +59,22 @@ export default function Signup({ onSignupSuccess, onShowLogin }) {
     <div
       className={`min-h-screen ${
         theme === "light" ? "bg-white" : "bg-gray-900"
-      } text-black`}
+      } dark:text-white text-black`}
     >
-      <Navbar />
+      <Navbar minimal={true} />
       <div className="flex items-center justify-center p-8">
         <form
           onSubmit={handleSubmit}
           className="flex flex-col gap-4 w-full max-w-sm"
         >
-          <h2 className="text-2xl font-bold">{t("Sign Up")}</h2>
+          <h2 className="text-2xl font-bold dark:text-white">{t("Sign Up")}</h2>
           <input
             type="text"
             placeholder={t("Full name")}
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             required
-            className="p-2 rounded border"
+            className="p-2 rounded border dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400"
           />
           <input
             type="email"
@@ -82,14 +82,14 @@ export default function Signup({ onSignupSuccess, onShowLogin }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="p-2 rounded border"
+            className="p-2 rounded border dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400"
           />
           <input
             type="tel"
             placeholder={t("Phone (optional)")}
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
-            className="p-2 rounded border"
+            className="p-2 rounded border dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400"
           />
           <input
             type="password"
@@ -97,7 +97,7 @@ export default function Signup({ onSignupSuccess, onShowLogin }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="p-2 rounded border"
+            className="p-2 rounded border dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400"
           />
           <input
             type="password"
@@ -105,21 +105,21 @@ export default function Signup({ onSignupSuccess, onShowLogin }) {
             value={password2}
             onChange={(e) => setPassword2(e.target.value)}
             required
-            className="p-2 rounded border"
+            className="p-2 rounded border dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400"
           />
           {error && <p className="text-red-500">{error}</p>}
           {success && <p className="text-green-500">{success}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="p-2 rounded bg-green-600 text-white"
+            className="p-2 rounded bg-blue-600 text-white"
           >
             {loading ? t("Creating...") : t("Create account")}
           </button>
-          <p className="text-sm text-center mt-2">
+          <p className="text-sm text-center mt-2 dark:text-gray-400">
             {t("Already have an account?")}{" "}
             <span
-              className="text-blue-500 cursor-pointer"
+              className="text-blue-500 cursor-pointer dark:text-blue-400"
               onClick={onShowLogin}
             >
               {t("Login")}

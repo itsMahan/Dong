@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { useTranslation } from "react-i18next";
 import * as dongsApi from "../api/dongs";
 import { ThemeContext } from "./ThemeContext";
+import { formatToman } from "../utils/format";
 
 function SettlementDetail({ dongId }) {
   const { t } = useTranslation();
@@ -41,18 +42,23 @@ function SettlementDetail({ dongId }) {
   if (!settlement) {
     return <div className="p-4 text-center">{t("No settlement details found.")}</div>;
   }
-  const formatTransaction = (description) => {
+
+  const formatTransaction = (description, amount) => {
     const parts = description.split(" ");
-    // Expected Persian format: "{debtor} باید {amount} تومان به {creditor} بپردازد"
-    // Example: "mahan باید 150.0 تومان به arman بپردازد"
-    if (parts.length < 6) return description; // Return original if format is unexpected
+    if (parts.length < 6) return description;
 
     const debtor = parts[0];
-    const amount = parts[2];
     const creditor = parts[5];
+    const formattedAmount = formatToman(amount);
 
-    return `${debtor} should pay ${amount} Toman to ${creditor}`;
+    // Using a template string for translation
+    return t("{{debtor}} should pay {{amount}} to {{creditor}}", {
+      debtor,
+      amount: formattedAmount,
+      creditor,
+    });
   };
+
   return (
     <div
       className={`rounded-lg shadow-sm p-4 ${
@@ -86,7 +92,7 @@ function SettlementDetail({ dongId }) {
               {t("Total Expenses")}
             </p>
             <p className="font-semibold">
-              {settlement.summary.total_expenses}
+              {formatToman(settlement.summary.total_expenses)}
             </p>
           </div>
           <div>
@@ -95,7 +101,7 @@ function SettlementDetail({ dongId }) {
                 theme === "light" ? "text-gray-600" : "text-gray-400"
               }`}
             >
-              {t("Total Transactions")}
+              {t("Total Expenses")}
             </p>
             <p className="font-semibold">
               {settlement.summary.total_transactions}
@@ -112,7 +118,7 @@ function SettlementDetail({ dongId }) {
             <ul>
               {settlement.summary.creditors.map((c) => (
                 <li key={c.name} className="font-semibold text-green-500 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md p-1 -mx-1">
-                  {c.name}: {c.amount}
+                  {c.name}: {formatToman(c.amount)}
                 </li>
               ))}
             </ul>
@@ -128,7 +134,7 @@ function SettlementDetail({ dongId }) {
             <ul>
               {settlement.summary.debtors.map((d) => (
                 <li key={d.name} className="font-semibold text-red-500">
-                  {d.name}: {d.amount}
+                  {d.name}: {formatToman(d.amount)}
                 </li>
               ))}
             </ul>
@@ -143,7 +149,7 @@ function SettlementDetail({ dongId }) {
             theme === "light" ? "text-gray-800" : "text-gray-200"
           }`}
         >
-          {t("Transactions")}
+          {t("Expenses")}
         </h4>
         <ul className="space-y-2">
           {settlement.transactions.map((t, index) => (
@@ -158,7 +164,7 @@ function SettlementDetail({ dongId }) {
                   theme === "light" ? "text-gray-800" : "text-gray-200"
                 }`}
               >
-                {formatTransaction(t.description)}
+                {formatTransaction(t.description, t.amount)}
               </p>
             </li>
           ))}
@@ -189,7 +195,7 @@ function SettlementDetail({ dongId }) {
                   balance >= 0 ? "text-green-600" : "text-red-500"
                 }`}
               >
-                {balance}
+                {formatToman(balance)}
               </span>
             </li>
           ))}

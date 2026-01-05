@@ -28,11 +28,11 @@ export default function DoneRow({ doneItems = [], onToggle }) {
           <div className="text-left">
             <div className="font-medium">{t("Done")}</div>
             <div className="text-sm text-gray-500">
-              {count === 0
-                ? t("No done transactions")
-                : `${count} ${
-                    count > 1 ? t("transactions") : t("transaction")
-                  } — ${last?.description || ""}`}
+              {count > 0
+                ? `${count} ${
+                    count > 1 ? t("expenses") : t("expense")
+                  } ${t("done")}`
+                : t("No done expenses")}
             </div>
           </div>
         </div>

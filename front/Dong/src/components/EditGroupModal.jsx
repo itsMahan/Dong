@@ -31,11 +31,11 @@ export default function EditGroupModal({ open, onClose, onSave, group }) {
         aria-hidden="true"
       />
       <div
-        className={`relative w-full max-w-lg mx-auto rounded-lg shadow-xl transform transition-all duration-300 ${
+        className={`relative w-full max-w-lg mx-4 rounded-lg shadow-xl transform transition-all duration-300 ${
           open ? "scale-100 opacity-100" : "scale-95 opacity-0"
         } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
       >
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
           <h3 className="text-lg font-semibold">{t("Edit Group Name")}</h3>
           <button
             type="button"
@@ -58,27 +58,35 @@ export default function EditGroupModal({ open, onClose, onSave, group }) {
             </svg>
           </button>
         </div>
-        <div className="p-4">
-          <label className="block text-sm font-medium mb-1">{t("Group Name")}</label>
+        <div className="p-6">
+          <label className="block text-sm font-medium mb-2">{t("Group Name")}</label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-2 rounded border focus:ring-2 focus:ring-indigo-500 hover:border-indigo-500"
+            className={`w-full p-3 rounded-md border ${
+              theme === "light"
+                ? "bg-gray-50 border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                : "bg-gray-700 border-gray-600 text-white focus:ring-indigo-500 focus:border-indigo-500"
+            } transition duration-150 ease-in-out`}
           />
         </div>
-        <div className="flex items-center justify-end gap-3 p-4 border-t">
+        <div className="flex items-center justify-end gap-4 p-4 bg-gray-50 dark:bg-gray-900/50 border-t dark:border-gray-700">
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded border hover:bg-gray-100 dark:hover:bg-gray-600"
+            className={`px-4 py-2 rounded-md text-sm font-medium ${
+              theme === "light"
+                ? "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                : "bg-gray-700 text-gray-200 hover:bg-gray-600"
+            } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500`}
           >
             {t("Cancel")}
           </button>
           <button
             type="button"
             onClick={handleSave}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             {t("Save")}
           </button>

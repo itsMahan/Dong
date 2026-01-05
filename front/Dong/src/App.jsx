@@ -1,45 +1,36 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Routes, Route } from "react-router-dom";
 import AuthPage from "./pages/AuthPage";
 import TricountsPage from "./pages/TricountsPage";
 import HomePage from "./pages/HomePage";
 import CreateGroupModal from "./components/CreateGroupModal";
+import { UserContext } from "./components/UserContext";
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return !!localStorage.getItem("access_token");
-  });
-
+  const { user, setUser, logout } = useContext(UserContext);
   const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
-
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    setIsLoggedIn(false);
-  };
 
   return (
     <>
       <Routes>
-        {isLoggedIn ? (
+        {user ? (
           <>
             <Route
               path="/"
               element={
                 <TricountsPage
-                  onLogout={handleLogout}
+                  onLogout={logout}
                   onCreateGroup={() => setShowCreateGroupModal(true)}
                 />
               }
             />
-            <Route path="/group/:groupId" element={<HomePage onLogout={handleLogout} />} />
+            <Route
+              path="/group/:groupId"
+              element={<HomePage onLogout={logout} />}
+            />
           </>
         ) : (
-          <Route path="*" element={<AuthPage onLogin={handleLogin} />} />
+          <Route path="*" element={<AuthPage onLogin={setUser} />} />
         )}
       </Routes>
       <CreateGroupModal

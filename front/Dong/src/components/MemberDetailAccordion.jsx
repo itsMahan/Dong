@@ -6,7 +6,7 @@ function MemberDetailAccordion({ onToggle, showDetails, theme, selectedMemberNam
   const handleSelectChange = (event) => {
     const memberName = event.target.value;
     onSelect(memberName);
-    onToggle(!!memberName); // Show details if a member is selected, hide otherwise
+    onToggle(!!memberName); 
   };
 
   return (

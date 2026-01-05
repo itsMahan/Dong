@@ -52,7 +52,7 @@ export default function CreateGroupModal({ open, onClose }) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300 ${
+      className={`fixed inset-0 z-50 flex items-center justify-center md:items-end md:justify-center transition-opacity duration-300 ${
         open ? "opacity-100" : "opacity-0"
       }`}
     >
@@ -62,16 +62,35 @@ export default function CreateGroupModal({ open, onClose }) {
         aria-hidden="true"
       />
       <div
-        className={`relative w-full max-w-lg mx-auto rounded-lg shadow-xl transform transition-all duration-300 ${
-          open ? "scale-100 opacity-100" : "scale-95 opacity-0"
-        } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
+        className={`relative w-[calc(100%-2rem)] mx-4 md:max-w-lg md:mx-auto rounded-lg md:rounded-xl shadow-xl transform transition-all duration-300
+        ${
+          open
+            ? "scale-100 opacity-100 md:translate-y-0"
+            : "scale-95 opacity-0 md:translate-y-full"
+        }
+        ${theme === "light" ? "bg-white" : "bg-gray-800"}
+        md:w-full md:mx-auto md:bottom-0 md:left-0 md:right-0 md:rounded-b-none md:rounded-t-lg`}
       >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h3 className="text-lg font-semibold">{t("Create new Dong")}</h3>
+        <div
+          className={`flex items-center justify-between p-4 border-b ${
+            theme === "light" ? "border-gray-200" : "border-gray-700"
+          }`}
+        >
+          <h3
+            className={`text-lg font-semibold ${
+              theme === "light" ? "text-gray-900" : "text-white"
+            }`}
+          >
+            {t("Create new Dong")}
+          </h3>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
+            className={`p-1 rounded-full ${
+              theme === "light"
+                ? "hover:bg-gray-200 text-gray-700"
+                : "hover:bg-gray-700 text-gray-300"
+            } cursor-pointer`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -92,19 +111,31 @@ export default function CreateGroupModal({ open, onClose }) {
 
         <div className="p-4">
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">
+            <label
+              className={`block text-sm font-medium mb-1 ${
+                theme === "light" ? "text-gray-700" : "text-gray-300"
+              }`}
+            >
               {t("Dong name")}
             </label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full p-2 rounded border focus:ring-2 focus:ring-indigo-500 hover:border-indigo-500"
+              className={`w-full p-2 rounded border ${
+                theme === "light"
+                  ? "border-gray-300 focus:ring-indigo-500 hover:border-indigo-500 text-gray-900"
+                  : "border-gray-600 bg-gray-700 text-white focus:ring-indigo-500 hover:border-indigo-500"
+              }`}
               placeholder={t("e.g., Weekend Trip")}
             />
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">
+            <label
+              className={`block text-sm font-medium mb-1 ${
+                theme === "light" ? "text-gray-700" : "text-gray-300"
+              }`}
+            >
               {t("Members")}
             </label>
             {members.map((member, index) => (
@@ -112,10 +143,14 @@ export default function CreateGroupModal({ open, onClose }) {
                 <input
                   value={member.name}
                   onChange={(e) => handleMemberChange(index, e.target.value)}
-                  className="w-full p-2 pr-10 rounded border focus:ring-2 focus:ring-indigo-500 hover:border-indigo-500"
+                  className={`w-full p-2 pr-10 rounded border ${
+                    theme === "light"
+                      ? "border-gray-300 focus:ring-indigo-500 hover:border-indigo-500 text-gray-900"
+                      : "border-gray-600 bg-gray-700 text-white focus:ring-indigo-500 hover:border-indigo-500"
+                  }`}
                   placeholder={`${t("Member")} ${index + 1}`}
                 />
-                {members.length > 1 && ( // Only show remove button if there's more than one member
+                {members.length > 1 && (
                   <button
                     type="button"
                     onClick={() => removeMember(index)}
@@ -140,18 +175,26 @@ export default function CreateGroupModal({ open, onClose }) {
             <button
               type="button"
               onClick={addMember}
-              className="text-indigo-600 cursor-pointer"
+              className="text-indigo-600 cursor-pointer hover:text-indigo-700"
             >
               {t("+ Add member")}
             </button>
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-3 p-4 border-t">
+        <div
+          className={`flex items-center justify-end gap-3 p-4 border-t ${
+            theme === "light" ? "border-gray-200" : "border-gray-700"
+          }`}
+        >
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded border hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+            className={`p-2 rounded border ${
+              theme === "light"
+                ? "border-gray-300 hover:bg-gray-100 text-gray-700"
+                : "border-gray-600 hover:bg-gray-700 text-gray-300"
+            } cursor-pointer`}
           >
             {t("Cancel")}
           </button>
