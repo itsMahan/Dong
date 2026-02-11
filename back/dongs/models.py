@@ -2,7 +2,6 @@ from django.db import models
 from accounts.models import User
 
 
-
 class Dong(models.Model):
     title = models.CharField(max_length=255)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='dongs')
@@ -32,6 +31,16 @@ class Dong(models.Model):
         if self.total_budget is None:
             return None
         return Decimal(str(self.total_budget)) - self.get_total_expenses()
+
+    def get_burn_rate(self):
+        """محاسبه درصد مصرف بودجه (burn rate)"""
+        from decimal import Decimal
+        if self.total_budget is None or self.total_budget == 0:
+            return None
+
+        total_expenses = self.get_total_expenses()
+        burn_rate = (total_expenses / Decimal(str(self.total_budget))) * 100
+        return float(round(burn_rate, 2))
 
 
 class DongMember(models.Model):

@@ -186,7 +186,8 @@ class AddExpenseView(APIView):
                 "budget_info": {
                     "total_budget": float(dong.total_budget) if dong.total_budget else None,
                     "total_expenses": round(dong.get_total_expenses(), 2),
-                    "remaining_budget": round(dong.get_remaining_budget(), 2) if dong.total_budget else None
+                    "remaining_budget": round(dong.get_remaining_budget(), 2) if dong.total_budget else None,
+                    "burn_rate": dong.get_burn_rate()
                 }
             }, status=201)
 
