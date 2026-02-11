@@ -8,10 +8,11 @@ class DongSerializer(serializers.ModelSerializer):
     total_expenses = serializers.SerializerMethodField()
     remaining_budget = serializers.SerializerMethodField()
     burn_rate = serializers.SerializerMethodField()
+    budget_forecast = serializers.SerializerMethodField()
 
     class Meta:
         model = Dong
-        fields = ['id', 'title', 'members', 'total_budget', 'total_expenses', 'remaining_budget', 'burn_rate']
+        fields = ['id', 'title', 'members', 'total_budget', 'total_expenses', 'remaining_budget', 'burn_rate', 'budget_forecast']
 
     def get_members(self, obj):
         # 'obj' is the Dong instance.
@@ -33,6 +34,10 @@ class DongSerializer(serializers.ModelSerializer):
     def get_burn_rate(self, obj):
         """محاسبه درصد مصرف بودجه"""
         return obj.get_burn_rate()
+
+    def get_budget_forecast(self, obj):
+        """پیش‌بینی بودجه"""
+        return obj.get_budget_forecast()
 
 
 class DongMemberSerializer(serializers.ModelSerializer):
