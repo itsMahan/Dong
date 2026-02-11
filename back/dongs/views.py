@@ -133,6 +133,34 @@ class AddExpenseView(APIView):
             participants = serializer.validated_data.pop('participants')
             expense_type = serializer.validated_data.get('expense_type', 'total')
 
+            # محاسبه مبلغ کل خرج جدید
+            amount = serializer.validated_data.get('amount')
+            quantity = serializer.validated_data.get('quantity', 1)
+            tax_percentage = serializer.validated_data.get('tax_percentage', 10.00)
+            include_tax = serializer.validated_data.get('include_tax', False)
+
+            base_amount = amount * quantity
+            if include_tax:
+                tax_amount = base_amount * (float(tax_percentage) / 100)
+                new_expense_total = base_amount + tax_amount
+            else:
+                new_expense_total = base_amount
+
+            # چک کردن بودجه
+            if dong.total_budget is not None:
+                remaining_budget = dong.get_remaining_budget()
+                if new_expense_total > remaining_budget:
+                    return Response({
+                        "error": "بودجه کافی نیست!",
+                        "details": {
+                            "total_budget": float(dong.total_budget),
+                            "current_expenses": round(dong.get_total_expenses(), 2),
+                            "remaining_budget": round(remaining_budget, 2),
+                            "new_expense_amount": round(new_expense_total, 2),
+                            "shortage": round(new_expense_total - remaining_budget, 2)
+                        }
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
             # ذخیره expense
             expense = serializer.save(
                 dong=dong,
@@ -154,7 +182,12 @@ class AddExpenseView(APIView):
                 "quantity": expense.quantity,
                 "tax_percentage": float(expense.tax_percentage),
                 "include_tax": expense.include_tax,
-                "total_amount": round(expense.get_total_amount(), 2)
+                "total_amount": round(expense.get_total_amount(), 2),
+                "budget_info": {
+                    "total_budget": float(dong.total_budget) if dong.total_budget else None,
+                    "total_expenses": round(dong.get_total_expenses(), 2),
+                    "remaining_budget": round(dong.get_remaining_budget(), 2) if dong.total_budget else None
+                }
             }, status=201)
 
         return Response(serializer.errors, status=400)
@@ -177,8 +210,44 @@ class UpdateExpenseView(APIView):
         )
 
         if serializer.is_valid():
+            dong = expense.dong
+
+            # محاسبه مبلغ فعلی خرج (قبل از آپدیت)
+            old_expense_total = expense.get_total_amount()
+
+            # محاسبه مبلغ جدید خرج (بعد از آپدیت)
+            amount = serializer.validated_data.get('amount', expense.amount)
+            quantity = serializer.validated_data.get('quantity', expense.quantity)
+            tax_percentage = serializer.validated_data.get('tax_percentage', expense.tax_percentage)
+            include_tax = serializer.validated_data.get('include_tax', expense.include_tax)
+
+            base_amount = amount * quantity
+            if include_tax:
+                tax_amount = base_amount * (float(tax_percentage) / 100)
+                new_expense_total = base_amount + tax_amount
+            else:
+                new_expense_total = base_amount
+
+            # چک کردن بودجه
+            if dong.total_budget is not None:
+                # محاسبه بودجه باقی‌مانده + مبلغ فعلی این خرج (چون قراره جایگزین بشه)
+                remaining_budget = dong.get_remaining_budget() + Decimal(str(old_expense_total))
+
+                if new_expense_total > remaining_budget:
+                    return Response({
+                        "error": "بودجه کافی نیست!",
+                        "details": {
+                            "total_budget": float(dong.total_budget),
+                            "current_expenses": round(dong.get_total_expenses(), 2),
+                            "old_expense_amount": round(old_expense_total, 2),
+                            "new_expense_amount": round(new_expense_total, 2),
+                            "available_budget": round(remaining_budget, 2),
+                            "shortage": round(new_expense_total - remaining_budget, 2)
+                        }
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
             participants_data = serializer.validated_data.pop('participants', None)
-            
+
             instance = serializer.save()
 
             if participants_data is not None:
