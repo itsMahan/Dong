@@ -4,16 +4,30 @@ from rest_framework import serializers
 
 class DongSerializer(serializers.ModelSerializer):
     members = serializers.SerializerMethodField()
+    total_budget = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, allow_null=True)
+    total_expenses = serializers.SerializerMethodField()
+    remaining_budget = serializers.SerializerMethodField()
 
     class Meta:
         model = Dong
-        fields = ['id', 'title', 'members']
+        fields = ['id', 'title', 'members', 'total_budget', 'total_expenses', 'remaining_budget']
 
     def get_members(self, obj):
         # 'obj' is the Dong instance.
         # obj.members.all() gets all related DongMember objects.
         # We create a list of just their names.
         return [{"id": member.id, "name": member.name} for member in obj.members.all()]
+
+    def get_total_expenses(self, obj):
+        """محاسبه مجموع خرج‌ها"""
+        return round(obj.get_total_expenses(), 2)
+
+    def get_remaining_budget(self, obj):
+        """محاسبه بودجه باقی‌مانده"""
+        remaining = obj.get_remaining_budget()
+        if remaining is None:
+            return None
+        return round(remaining, 2)
 
 
 class DongMemberSerializer(serializers.ModelSerializer):

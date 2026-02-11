@@ -7,9 +7,31 @@ class Dong(models.Model):
     title = models.CharField(max_length=255)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='dongs')
     created_at = models.DateTimeField(auto_now_add=True)
+    total_budget = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="بودجه کل برای این دنگ (اختیاری)"
+    )
 
     def __str__(self):
         return f'{self.title} - Created.By: {self.created_by.full_name}'
+
+    def get_total_expenses(self):
+        """محاسبه مجموع کل خرج‌ها با احتساب تعداد و مالیات"""
+        from decimal import Decimal
+        total = Decimal('0')
+        for expense in self.expenses.all():
+            total += Decimal(str(expense.get_total_amount()))
+        return total
+
+    def get_remaining_budget(self):
+        """محاسبه بودجه باقی‌مانده"""
+        from decimal import Decimal
+        if self.total_budget is None:
+            return None
+        return Decimal(str(self.total_budget)) - self.get_total_expenses()
 
 
 class DongMember(models.Model):
@@ -64,8 +86,3 @@ class ExpenseParticipant(models.Model):
 
     def __str__(self):
         return f"{self.member.name} in {self.expense.title}"
-
-
-
-
-
