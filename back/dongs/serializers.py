@@ -7,10 +7,11 @@ class DongSerializer(serializers.ModelSerializer):
     total_budget = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, allow_null=True)
     total_expenses = serializers.SerializerMethodField()
     remaining_budget = serializers.SerializerMethodField()
+    burn_rate = serializers.SerializerMethodField()
 
     class Meta:
         model = Dong
-        fields = ['id', 'title', 'members', 'total_budget', 'total_expenses', 'remaining_budget']
+        fields = ['id', 'title', 'members', 'total_budget', 'total_expenses', 'remaining_budget', 'burn_rate']
 
     def get_members(self, obj):
         # 'obj' is the Dong instance.
@@ -28,6 +29,10 @@ class DongSerializer(serializers.ModelSerializer):
         if remaining is None:
             return None
         return round(remaining, 2)
+
+    def get_burn_rate(self, obj):
+        """محاسبه درصد مصرف بودجه"""
+        return obj.get_burn_rate()
 
 
 class DongMemberSerializer(serializers.ModelSerializer):
