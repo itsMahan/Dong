@@ -116,7 +116,7 @@ export default function VerificationPage({ email, onVerificationSuccess }) {
                 inputMode="numeric"
                 pattern="[0-9]*"
                 autoComplete="one-time-code"
-                placeholder={t("Verification Code")}
+                placeholder={t(" ")}
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 required
@@ -156,10 +156,10 @@ export default function VerificationPage({ email, onVerificationSuccess }) {
               {loadingResend
                 ? t("Resending...")
                 : countdown > 0
-                ? `${t("Resend code in")} (${Math.floor(
-                    countdown / 60
-                  )}:${(countdown % 60).toString().padStart(2, "0")})`
-                : t("Resend code")}
+                  ? `${t("Resend code in")} (${Math.floor(
+                      countdown / 60,
+                    )}:${(countdown % 60).toString().padStart(2, "0")})`
+                  : t("Resend code")}
             </button>
             {resendMsg && (
               <p className="mt-2 text-sm text-green-500 whitespace-pre-wrap">
