@@ -95,7 +95,7 @@ export default function TricountsPage({ onCreateGroup, onLogout }) {
                 <Link to={`/group/${group.id}`} className="absolute inset-0 z-0" />
                 <div className="flex-grow">
                   <h3 className="text-xl font-bold mb-2">{group.title}</h3>
-                  <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-3">
                     {group.members?.length || 0}
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -113,15 +113,34 @@ export default function TricountsPage({ onCreateGroup, onLogout }) {
                       <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z" />
                     </svg>
                   </div>
+
+                  {group.total_budget && (
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                        <span>{t("Budget")}:</span>
+                        <span>{formatToman(group.total_budget)}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                        <div 
+                          className={`h-1.5 rounded-full transition-all duration-500 ${
+                            (group.total_expenses / group.total_budget) >= 1 ? 'bg-red-500' : 
+                            (group.total_expenses / group.total_budget) > 0.8 ? 'bg-yellow-500' : 'bg-indigo-500'
+                          }`}
+                          style={{ width: `${Math.min(100, (group.total_expenses / group.total_budget) * 100)}%` }}
+                        ></div>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-500 dark:text-gray-400">{t("Remaining")}:</span>
+                        <span className={`font-medium ${group.remaining_budget < 0 ? 'text-red-500' : 'text-green-500'}`}>
+                          {formatToman(group.remaining_budget)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="mt-6 text-right">
                   <span className="text-2xl font-bold">
-                    {formatToman(
-                      group.transactions?.reduce(
-                        (acc, tx) => acc + tx.amount,
-                        0
-                      ) || 0
-                    )}
+                    {formatToman(group.total_expenses || 0)}
                   </span>
                 </div>
                 <div className={`absolute top-0 p-4 z-10 ${isRtl ? "left-0" : "right-0"}`}>
@@ -150,7 +169,7 @@ export default function TricountsPage({ onCreateGroup, onLogout }) {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth="2"
-                          d="M12 5v.01M12 12v.01M12 19v.01M12"
+                          d="M12 5v.01M12 12v.01M12 19v.01"
                         ></path>
                       </svg>
                     </button>

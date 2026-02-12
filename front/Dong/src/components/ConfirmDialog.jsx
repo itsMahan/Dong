@@ -11,6 +11,7 @@ export default function ConfirmDialog({
   cancelText,
   onConfirm,
   onCancel,
+  isDestructive = true,
 }) {
   const { t } = useTranslation();
   const { theme } = useContext(ThemeContext);
@@ -35,17 +36,23 @@ export default function ConfirmDialog({
         </div>
 
         <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900 flex justify-end gap-2">
-          <button
-            onClick={onCancel}
-            className="px-3 py-2 rounded-md border bg-white dark:bg-gray-800 text-sm"
-          >
-            {cancelText || t("Cancel")}
-          </button>
+          {onCancel && (
+            <button
+              onClick={onCancel}
+              className="px-3 py-2 rounded-md border bg-white dark:bg-gray-800 text-sm"
+            >
+              {cancelText || t("Cancel")}
+            </button>
+          )}
           <button
             onClick={onConfirm}
-            className="px-3 py-2 rounded-md bg-red-600 text-white text-sm hover:bg-red-700"
+            className={`px-3 py-2 rounded-md text-white text-sm ${
+              isDestructive
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-indigo-600 hover:bg-indigo-700"
+            }`}
           >
-            {confirmText || t("Delete")}
+            {confirmText || t("OK")}
           </button>
         </div>
       </div>

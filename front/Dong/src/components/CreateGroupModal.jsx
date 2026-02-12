@@ -7,6 +7,7 @@ import ExpenseContext from "./ExpenseContext";
 export default function CreateGroupModal({ open, onClose }) {
   const { t } = useTranslation();
   const [name, setName] = useState("");
+  const [budget, setBudget] = useState("");
   const [members, setMembers] = useState([{ name: "" }]);
   const [submitting, setSubmitting] = useState(false);
   const { theme } = useContext(ThemeContext);
@@ -34,6 +35,7 @@ export default function CreateGroupModal({ open, onClose }) {
       setSubmitting(true);
       const group = {
         title: name,
+        total_budget: budget ? parseFloat(budget) : null,
         members: members.filter((m) => m.name.trim() !== ""),
       };
       const newGroup = await addGroup(group);
@@ -127,6 +129,27 @@ export default function CreateGroupModal({ open, onClose }) {
                   : "border-gray-600 bg-gray-700 text-white focus:ring-indigo-500 hover:border-indigo-500"
               }`}
               placeholder={t("e.g., Weekend Trip")}
+            />
+          </div>
+
+          <div className="mb-4">
+            <label
+              className={`block text-sm font-medium mb-1 ${
+                theme === "light" ? "text-gray-700" : "text-gray-300"
+              }`}
+            >
+              {t("Total Budget")}
+            </label>
+            <input
+              type="number"
+              value={budget}
+              onChange={(e) => setBudget(e.target.value)}
+              className={`w-full p-2 rounded border ${
+                theme === "light"
+                  ? "border-gray-300 focus:ring-indigo-500 hover:border-indigo-500 text-gray-900"
+                  : "border-gray-600 bg-gray-700 text-white focus:ring-indigo-500 hover:border-indigo-500"
+              }`}
+              placeholder={t("Optional budget")}
             />
           </div>
 
