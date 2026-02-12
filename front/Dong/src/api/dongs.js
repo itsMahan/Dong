@@ -4,12 +4,12 @@ export const listDongs = () => {
     return apiClient.get("/dongs/list/");
 };
 
-export const createDong = (title) => {
-    return apiClient.post("/dongs/create/", { title });
+export const createDong = (title, total_budget) => {
+    return apiClient.post("/dongs/create/", { title, total_budget });
 };
 
-export const updateDong = (id, title) => {
-    return apiClient.patch(`/dongs/update/${id}/`, { title });
+export const updateDong = (id, title, total_budget) => {
+    return apiClient.patch(`/dongs/update/${id}/`, { title, total_budget });
 };
 
 export const deleteDong = (id) => {

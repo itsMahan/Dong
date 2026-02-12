@@ -93,7 +93,7 @@ export function ExpenseProvider({ children }) {
   const addGroup = async (group) => {
     setLoading(true);
     try {
-      const newDongResponse = await dongsApi.createDong(group.title);
+      const newDongResponse = await dongsApi.createDong(group.title, group.total_budget);
       const newDong = newDongResponse.data;
 
       const memberPromises = group.members.map((member) =>
@@ -114,7 +114,7 @@ export function ExpenseProvider({ children }) {
   const updateGroup = async (group) => {
     setLoading(true);
     try {
-      await dongsApi.updateDong(group.id, group.title);
+      await dongsApi.updateDong(group.id, group.title, group.total_budget);
       setGroups(groups.map((g) => (g.id === group.id ? group : g)));
     } catch (err) {
       console.error("updateGroup error:", err);
@@ -147,6 +147,7 @@ export function ExpenseProvider({ children }) {
     } catch (err) {
       console.error("addTransaction error:", err.response ? err.response.data : err);
       setError(err);
+      throw err; // Re-throw the error
     }
     finally {
       setLoading(false);
@@ -161,6 +162,7 @@ export function ExpenseProvider({ children }) {
     } catch (err) {
       console.error("addExpenseWithParticipants error:", err);
       setError(err);
+      throw err; // Re-throw the error
     }
     finally {
       setLoading(false);
@@ -175,6 +177,7 @@ export function ExpenseProvider({ children }) {
     } catch (err) {
       console.error("updateTransaction error:", err);
       setError(err);
+      throw err; // Re-throw the error
     }
     finally {
       setLoading(false);

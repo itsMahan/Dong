@@ -5,16 +5,22 @@ import { ThemeContext } from "./ThemeContext";
 export default function EditGroupModal({ open, onClose, onSave, group }) {
   const { t } = useTranslation();
   const [title, setTitle] = useState("");
+  const [budget, setBudget] = useState("");
   const { theme } = useContext(ThemeContext) || { theme: "light" };
 
   useEffect(() => {
     if (group) {
       setTitle(group.title);
+      setBudget(group.total_budget || "");
     }
   }, [group]);
 
   const handleSave = () => {
-    onSave({ ...group, title });
+    onSave({ 
+      ...group, 
+      title, 
+      total_budget: budget ? parseFloat(budget) : null 
+    });
   };
 
   if (!open) return null;
@@ -36,7 +42,7 @@ export default function EditGroupModal({ open, onClose, onSave, group }) {
         } ${theme === "light" ? "bg-white" : "bg-gray-800"}`}
       >
         <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
-          <h3 className="text-lg font-semibold">{t("Edit Group Name")}</h3>
+          <h3 className="text-lg font-semibold">{t("Edit Group")}</h3>
           <button
             type="button"
             onClick={onClose}
@@ -59,17 +65,33 @@ export default function EditGroupModal({ open, onClose, onSave, group }) {
           </button>
         </div>
         <div className="p-6">
-          <label className="block text-sm font-medium mb-2">{t("Group Name")}</label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className={`w-full p-3 rounded-md border ${
-              theme === "light"
-                ? "bg-gray-50 border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                : "bg-gray-700 border-gray-600 text-white focus:ring-indigo-500 focus:border-indigo-500"
-            } transition duration-150 ease-in-out`}
-          />
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">{t("Group Name")}</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className={`w-full p-3 rounded-md border ${
+                theme === "light"
+                  ? "bg-gray-50 border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                  : "bg-gray-700 border-gray-600 text-white focus:ring-indigo-500 focus:border-indigo-500"
+              } transition duration-150 ease-in-out`}
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">{t("Total Budget")}</label>
+            <input
+              type="number"
+              value={budget}
+              onChange={(e) => setBudget(e.target.value)}
+              className={`w-full p-3 rounded-md border ${
+                theme === "light"
+                  ? "bg-gray-50 border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                  : "bg-gray-700 border-gray-600 text-white focus:ring-indigo-500 focus:border-indigo-500"
+              } transition duration-150 ease-in-out`}
+              placeholder={t("Optional budget")}
+            />
+          </div>
         </div>
         <div className="flex items-center justify-end gap-4 p-4 bg-gray-50 dark:bg-gray-900/50 border-t dark:border-gray-700">
           <button

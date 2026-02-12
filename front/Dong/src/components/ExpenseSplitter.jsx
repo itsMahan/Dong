@@ -99,6 +99,8 @@ function ExpenseSplitterInner({ group }, ref) {
         members={members}
         groupId={groupId}
         expenseType={selectedExpenseType}
+        totalBudget={group.total_budget}
+        currentTotalExpenses={group.total_expenses}
       />
     </div>
   );
