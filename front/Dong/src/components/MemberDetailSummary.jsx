@@ -123,16 +123,18 @@ function MemberDetailSummary({ dongId, memberName, theme }) {
               {t("Expenses Paid:")}
             </h4>
             <ul className="list-disc list-inside">
-              {memberDetails.paid_expenses.map((expense, index) => (
-                <li
-                  key={index}
-                  className={`${
-                    theme === "light" ? "text-gray-700" : "text-gray-300"
-                  }`}
-                >
-                  {expense.title}: {formatToman(expense.amount)}
-                </li>
-              ))}
+              {memberDetails.paid_expenses
+                .filter((e) => (e.total_amount || e.amount) > 0)
+                .map((expense, index) => (
+                  <li
+                    key={index}
+                    className={`${
+                      theme === "light" ? "text-gray-700" : "text-gray-300"
+                    }`}
+                  >
+                    {expense.title}: {formatToman(expense.total_amount || expense.amount)}
+                  </li>
+                ))}
             </ul>
           </div>
         )}
@@ -148,18 +150,20 @@ function MemberDetailSummary({ dongId, memberName, theme }) {
               {t("Expenses Participated In:")}
             </h4>
             <ul className="list-disc list-inside">
-              {memberDetails.participated_expenses.map((expense, index) => (
-                <li
-                  key={index}
-                  className={`${
-                    theme === "light" ? "text-gray-700" : "text-gray-300"
-                  }`}
-                >
-                  {expense.title}{" "}
-                  {t("(Paid by {{name}})", { name: expense.paid_by })}:{" "}
-                  {t("Your share is")} {formatToman(expense.your_share)}
-                </li>
-              ))}
+              {memberDetails.participated_expenses
+                .filter((e) => Number(e.your_share) > 0)
+                .map((expense, index) => (
+                  <li
+                    key={index}
+                    className={`${
+                      theme === "light" ? "text-gray-700" : "text-gray-300"
+                    }`}
+                  >
+                    {expense.title}{" "}
+                    {t("(Paid by {{name}})", { name: expense.paid_by })}:{" "}
+                    {t("Your share is")} {formatToman(expense.your_share)}
+                  </li>
+                ))}
             </ul>
           </div>
         )}

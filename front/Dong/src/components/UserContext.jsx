@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from "react";
+import apiClient from "../api";
 
 export const UserContext = createContext();
 
@@ -16,6 +17,7 @@ export const UserProvider = ({ children }) => {
     localStorage.removeItem("user");
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
+    delete apiClient.defaults.headers.common['Authorization'];
     setUser(null);
   };
 

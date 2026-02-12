@@ -4,7 +4,7 @@ import * as dongsApi from "../api/dongs";
 import { ThemeContext } from "./ThemeContext";
 import { formatToman } from "../utils/format";
 
-function SettlementDetail({ dongId }) {
+function SettlementDetail({ dongId, expenses = [] }) {
   const { t } = useTranslation();
   const { theme } = useContext(ThemeContext);
   const [settlement, setSettlement] = useState(null);
@@ -101,10 +101,10 @@ function SettlementDetail({ dongId }) {
                 theme === "light" ? "text-gray-600" : "text-gray-400"
               }`}
             >
-              {t("Total Expenses")}
+              {t("Expenses Count")}
             </p>
             <p className="font-semibold">
-              {settlement.summary.total_transactions}
+              {expenses.length}
             </p>
           </div>
           <div>

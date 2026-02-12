@@ -11,7 +11,7 @@ export default function EditGroupModal({ open, onClose, onSave, group }) {
   useEffect(() => {
     if (group) {
       setTitle(group.title);
-      setBudget(group.total_budget || "");
+      setBudget(group.total_budget ? Math.round(Number(group.total_budget)) : "");
     }
   }, [group]);
 
@@ -19,7 +19,7 @@ export default function EditGroupModal({ open, onClose, onSave, group }) {
     onSave({ 
       ...group, 
       title, 
-      total_budget: budget ? parseFloat(budget) : null 
+      total_budget: budget ? Math.round(Number(budget)) : null 
     });
   };
 
@@ -82,13 +82,14 @@ export default function EditGroupModal({ open, onClose, onSave, group }) {
             <label className="block text-sm font-medium mb-2">{t("Total Budget")}</label>
             <input
               type="number"
+              step="1"
               value={budget}
               onChange={(e) => setBudget(e.target.value)}
               className={`w-full p-3 rounded-md border ${
                 theme === "light"
                   ? "bg-gray-50 border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
                   : "bg-gray-700 border-gray-600 text-white focus:ring-indigo-500 focus:border-indigo-500"
-              } transition duration-150 ease-in-out`}
+              } transition duration-150 ease-in-out [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]`}
               placeholder={t("Optional budget")}
             />
           </div>

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { ThemeContext } from "./ThemeContext";
@@ -13,6 +13,16 @@ export default function CreateGroupModal({ open, onClose }) {
   const { theme } = useContext(ThemeContext);
   const { addGroup } = useContext(ExpenseContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (open) {
+      // Reset state when modal opens
+      setName("");
+      setBudget("");
+      setMembers([{ name: "" }]);
+      setSubmitting(false);
+    }
+  }, [open]);
 
   const handleMemberChange = (index, value) => {
     const newMembers = [...members];
@@ -35,7 +45,7 @@ export default function CreateGroupModal({ open, onClose }) {
       setSubmitting(true);
       const group = {
         title: name,
-        total_budget: budget ? parseFloat(budget) : null,
+        total_budget: budget ? Math.round(Number(budget)) : null,
         members: members.filter((m) => m.name.trim() !== ""),
       };
       const newGroup = await addGroup(group);
@@ -142,13 +152,14 @@ export default function CreateGroupModal({ open, onClose }) {
             </label>
             <input
               type="number"
+              step="1"
               value={budget}
               onChange={(e) => setBudget(e.target.value)}
               className={`w-full p-2 rounded border ${
                 theme === "light"
                   ? "border-gray-300 focus:ring-indigo-500 hover:border-indigo-500 text-gray-900"
                   : "border-gray-600 bg-gray-700 text-white focus:ring-indigo-500 hover:border-indigo-500"
-              }`}
+              } [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]`}
               placeholder={t("Optional budget")}
             />
           </div>
@@ -216,7 +227,7 @@ export default function CreateGroupModal({ open, onClose }) {
             className={`p-2 rounded border ${
               theme === "light"
                 ? "border-gray-300 hover:bg-gray-100 text-gray-700"
-                : "border-gray-600 hover:bg-gray-700 text-gray-300"
+                : "border-gray-700 text-gray-300 hover:bg-gray-700"
             } cursor-pointer`}
           >
             {t("Cancel")}

@@ -77,10 +77,11 @@ export default function HomePage({ onLogout }) {
   const { members = [], transactions = [] } = group;
 
   const activeTransactions = transactions.filter((t) => !t.archived);
-  const totalAmount = activeTransactions.reduce(
-    (s, t) => s + Number(t.amount || 0),
-    0
-  );
+  
+  // Use group.total_expenses if available (most accurate from backend), otherwise calculate
+  const totalAmount = group.total_expenses !== undefined
+    ? Number(group.total_expenses)
+    : activeTransactions.reduce((s, t) => s + Number(t.total_amount || t.amount || 0), 0);
 
   const tabs = [
     {
@@ -101,7 +102,7 @@ export default function HomePage({ onLogout }) {
     },
     {
       label: "Settlement",
-      content: <SettlementDetail dongId={groupId} />,
+      content: <SettlementDetail dongId={groupId} expenses={activeTransactions} />,
     },
   ];
 
@@ -152,11 +153,7 @@ export default function HomePage({ onLogout }) {
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
-                    <path
-                      fillRule="evenodd"
-                      d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                      clipRule="evenodd"
-                    />
+                    <path d="M10 2a.75.75 0 01.75.75v1.502a3.335 3.335 0 012.082.685.75.75 0 01-.933 1.182 1.835 1.835 0 00-1.149-.367h-1.5a1.5 1.5 0 000 3h1.5a3 3 0 010 6h-1.5a3.335 3.335 0 01-2.082-.685.75.75 0 01.933-1.182c.272.215.64.367 1.149.367h1.5a1.5 1.5 0 000-3h-1.5a3 3 0 010-6h1.5c.509 0 .877.152 1.149.367a.75.75 0 01-.933 1.182 1.835 1.835 0 00-1.149-.367v-1.502A.75.75 0 0110 2zM10 15.75v1.5a.75.75 0 01-1.5 0v-1.5a.75.75 0 011.5 0z" />
                   </svg>
                 </div>
               </div>
@@ -200,7 +197,7 @@ export default function HomePage({ onLogout }) {
               } rounded-lg shadow-sm p-4`}
             >
               <h3 className="text-lg font-semibold mb-3">{t("Settlement")}</h3>
-              <SettlementDetail dongId={groupId} />
+              <SettlementDetail dongId={groupId} expenses={activeTransactions} />
             </div>
           </section>
           <aside className="lg:col-span-1 space-y-4">
