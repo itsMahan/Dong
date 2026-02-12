@@ -36,8 +36,17 @@ export const resetPassword = (data) => {
   return apiClient.post("/users/rest-password", data);
 };
 
-export const verify = (data) => {
-  return apiClient.post("/users/verify", data);
+export const verify = async (data) => {
+  const response = await apiClient.post("/users/verify", data);
+  if (response.data.tokens) {
+    localStorage.setItem("access_token", response.data.tokens.access);
+    localStorage.setItem("refresh_token", response.data.tokens.refresh);
+    apiClient.defaults.headers.common['Authorization'] = `Bearer ${response.data.tokens.access}`;
+  }
+  if (response.data.user) {
+    localStorage.setItem("user", JSON.stringify(response.data.user));
+  }
+  return response.data;
 };
 
 export const resendCode = (email) => {
