@@ -1,7 +1,8 @@
-import React, { createContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useState, useEffect, useCallback, useContext } from "react";
 import * as dongsApi from "../api/dongs";
 import * as expensesApi from "../api/expenses";
 import * as membersApi from "../api/members";
+import { UserContext } from "./UserContext";
 
 const ExpenseContext = createContext({
   groups: [],
@@ -21,11 +22,13 @@ const ExpenseContext = createContext({
 });
 
 export function ExpenseProvider({ children }) {
+  const { user } = useContext(UserContext);
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const fetchGroups = useCallback(async () => {
+    if (!user) return;
     setLoading(true);
     setError(null);
     try {
@@ -82,11 +85,15 @@ export function ExpenseProvider({ children }) {
     finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
-    fetchGroups();
-  }, [fetchGroups]);
+    if (user) {
+      fetchGroups();
+    } else {
+      setGroups([]);
+    }
+  }, [user, fetchGroups]);
 
   const getGroup = (id) => groups.find((g) => String(g.id) === String(id));
 

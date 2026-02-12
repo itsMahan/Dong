@@ -15,8 +15,12 @@ export default function AuthPage({ onLogin }) {
     setCurrentView("verification");
   };
 
-  const handleVerificationSuccess = () => {
-    setCurrentView("login");
+  const handleVerificationSuccess = (user) => {
+    if (user && onLogin) {
+      onLogin(user);
+    } else {
+      setCurrentView("login");
+    }
   };
 
   const renderView = () => {

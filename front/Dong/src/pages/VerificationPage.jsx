@@ -43,9 +43,9 @@ export default function VerificationPage({ email, onVerificationSuccess }) {
     setLoadingVerify(true);
     try {
       const payload = { email, otp: code };
-      await verify(payload);
-      setSuccess(t("Account verified. Please log in."));
-      if (onVerificationSuccess) onVerificationSuccess();
+      const responseData = await verify(payload);
+      setSuccess(t("Account verified. Logging you in..."));
+      if (onVerificationSuccess) onVerificationSuccess(responseData.user);
     } catch (err) {
       const serverData = err?.response?.data;
       const msg =

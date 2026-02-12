@@ -139,8 +139,8 @@ export default function TricountsPage({ onCreateGroup, onLogout }) {
                         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div 
                             className={`h-2 rounded-full transition-all duration-500 ${
-                              (group.burn_rate !== undefined ? group.burn_rate : (group.total_expenses / group.total_budget * 100)) >= 90 ? 'bg-red-500' : 
-                              (group.burn_rate !== undefined ? group.burn_rate : (group.total_expenses / group.total_budget * 100)) > 70 ? 'bg-yellow-500' : 'bg-indigo-500'
+                              (group.burn_rate !== undefined ? group.burn_rate : (group.total_expenses / group.total_budget * 100)) >= 80 ? 'bg-red-500' : 
+                              (group.burn_rate !== undefined ? group.burn_rate : (group.total_expenses / group.total_budget * 100)) >= 50 ? 'bg-yellow-500' : 'bg-indigo-500'
                             }`}
                             style={{ width: `${Math.min(100, group.burn_rate !== undefined ? group.burn_rate : ((group.total_expenses / group.total_budget) * 100))}%` }}
                           ></div>
@@ -179,8 +179,8 @@ export default function TricountsPage({ onCreateGroup, onLogout }) {
                     <div className="flex flex-col items-start">
                       {group.total_budget && (
                         <span className={`text-lg font-bold ${
-                          (group.burn_rate !== undefined ? group.burn_rate : (group.total_expenses / group.total_budget * 100)) >= 90 ? 'text-red-500' : 
-                          (group.burn_rate !== undefined ? group.burn_rate : (group.total_expenses / group.total_budget * 100)) > 70 ? 'text-yellow-500' : 'text-indigo-500'
+                          (group.burn_rate !== undefined ? group.burn_rate : (group.total_expenses / group.total_budget * 100)) >= 80 ? 'text-red-500' : 
+                          (group.burn_rate !== undefined ? group.burn_rate : (group.total_expenses / group.total_budget * 100)) >= 50 ? 'text-yellow-500' : 'text-indigo-500'
                         }`}>
                           {Math.round(group.burn_rate !== undefined ? group.burn_rate : ((group.total_expenses / group.total_budget) * 100))}%
                         </span>
