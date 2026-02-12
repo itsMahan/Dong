@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import *
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
 from .utils import send_otp_code_via_email
 from .models import User, OtpCode
 
@@ -20,7 +21,8 @@ class UserRegisterView(APIView):
             # OtpCode.objects.filter(user=user).delete()
 
             if send_otp_code_via_email(user.email):
-                return Response(data="Please Check Your Email Address for Verification Code", status=status.HTTP_201_CREATED)
+                return Response(data="Please Check Your Email Address for Verification Code",
+                                status=status.HTTP_201_CREATED)
             else:
                 # اگه ارسال ایمیل ناموفق بود، کاربر رو پاک کن
                 user.delete()
@@ -58,7 +60,24 @@ class UserVerifyOtp(APIView):
 
                 user.is_verified = True
                 user.save()
-                return Response(data='Account Verified Successfully', status=status.HTTP_200_OK)
+
+                # ساخت توکن‌های JWT برای لاگین خودکار
+                refresh = RefreshToken.for_user(user)
+                refresh['email'] = user.email
+                refresh['full_name'] = user.full_name
+
+                return Response({
+                    'message': 'Account Verified Successfully',
+                    'tokens': {
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                    },
+                    'user': {
+                        'id': user.id,
+                        'email': user.email,
+                        'full_name': user.full_name,
+                    }
+                }, status=status.HTTP_200_OK)
 
             else:
                 return Response(data='Verification Code expired or invalid', status=status.HTTP_400_BAD_REQUEST)
@@ -100,6 +119,7 @@ class ResendOtpView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+
 class ForgotPasswordView(APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = ForgotPasswordSerializer
@@ -130,6 +150,7 @@ class ForgotPasswordView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+
 class PasswordResetView(APIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = ResetPasswordSerializer
@@ -144,7 +165,7 @@ class PasswordResetView(APIView):
         new_password = serializer.validated_data['new_password']
 
         try:
-            user=User.objects.get(email=email)
+            user = User.objects.get(email=email)
         except User.DoesNotExist:
             return Response(
                 {'error': 'User not found with given email address'},
@@ -152,9 +173,9 @@ class PasswordResetView(APIView):
             )
 
         otp = OtpCode.objects.filter(
-            user = user,
-            code = code,
-            is_used = False,
+            user=user,
+            code=code,
+            is_used=False,
         ).order_by('-created_at').first()
 
         if not otp:
