@@ -5,6 +5,7 @@ export const login = async (credentials) => {
   if (response.data.access) {
     localStorage.setItem("access_token", response.data.access);
     localStorage.setItem("refresh_token", response.data.refresh);
+    apiClient.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
     if (response.data.user) {
       localStorage.setItem("user", JSON.stringify(response.data.user));
     }

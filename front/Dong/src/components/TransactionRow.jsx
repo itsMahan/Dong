@@ -68,16 +68,28 @@ export default function TransactionRow({ tx, members }) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div>
-              <div
-                className={`font-medium ${
-                  tx.archived
-                    ? "line-through text-gray-400"
-                    : theme === "light"
-                    ? "text-gray-900"
-                    : "text-gray-100"
-                }`}
-              >
-                {tx.title || t("Expense")}
+              <div className="flex items-center gap-2">
+                <div
+                  className={`font-medium ${
+                    tx.archived
+                      ? "line-through text-gray-400"
+                      : theme === "light"
+                      ? "text-gray-900"
+                      : "text-gray-100"
+                  }`}
+                >
+                  {tx.title || t("Expense")}
+                </div>
+                <span 
+                  title={tx.expense_type === 'individual' ? t("Individual Expense") : t("Total Expense")}
+                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${
+                    tx.expense_type === 'individual' 
+                      ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800' 
+                      : 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800'
+                  }`}
+                >
+                  {tx.expense_type === 'individual' ? 'I' : 'T'}
+                </span>
               </div>
               <div
                 className={`text-xs ${
@@ -92,11 +104,11 @@ export default function TransactionRow({ tx, members }) {
           <div className="flex items-center gap-2">
             <div
               className={`${
-                positive ? "text-green-600" : "text-red-500"
+                Number(tx.total_amount || tx.amount) >= 0 ? "text-green-600" : "text-red-500"
               } font-semibold`}
             >
-              {positive ? "+" : "-"}
-              {formatToman(Math.abs(tx.amount))}
+              {Number(tx.total_amount || tx.amount) >= 0 ? "+" : "-"}
+              {formatToman(Math.abs(tx.total_amount || tx.amount))}
             </div>
             <div className="relative inline-block text-left" ref={dropdownRef}>
               <button

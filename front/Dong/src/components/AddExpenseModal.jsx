@@ -35,7 +35,7 @@ export default function AddExpenseModal({
         })
         .filter((id) => id !== null);
     }
-    return members.map((m) => m.id);
+    return []; // Deselect all by default
   };
 
   const [amount, setAmount] = useState("");
@@ -43,11 +43,13 @@ export default function AddExpenseModal({
   const [payer, setPayer] = useState(members[0]?.id ?? "");
   const [selected, setSelected] = useState([]);
   const [submitting, setSubmitting] = useState(false);
-  const [quantity, setQuantity] = useState(1);
-  const [taxPercentage, setTaxPercentage] = useState(0);
+  const [quantity, setQuantity] = useState("1");
+  const [taxPercentage, setTaxPercentage] = useState("");
   const [includeTax, setIncludeTax] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [showBudgetWarning, setShowBudgetWarning] = useState(false);
+  const [budgetWarningMessage, setBudgetWarningMessage] = useState("");
+  const [warningAction, setWarningAction] = useState(() => () => {});
 
   const { addExpenseWithParticipants, updateTransaction: ctxUpdateTransaction } =
     useContext(ExpenseContext) || {};
@@ -59,8 +61,8 @@ export default function AddExpenseModal({
       setTitle(expenseToEdit?.title || "");
       setPayer(getPayerId());
       setSelected(getInitialSelected());
-      setQuantity(expenseToEdit?.quantity || 1);
-      setTaxPercentage(expenseToEdit?.tax_percentage || 0);
+      setQuantity(expenseToEdit?.quantity ? String(expenseToEdit.quantity) : "1");
+      setTaxPercentage(expenseToEdit?.tax_percentage ? String(expenseToEdit.tax_percentage) : "0");
       setIncludeTax(expenseToEdit?.include_tax || false);
       setErrorMsg("");
       setShowBudgetWarning(false);
@@ -103,15 +105,56 @@ export default function AddExpenseModal({
         return;
       }
 
-      if (!force) {
+      if (selected.length === 0) {
+        setErrorMsg(t("Select at least one member"));
+        return;
+      }
+
+      const taxNum = Number(taxPercentage) || 0;
+      const qtyNum = Number(quantity) || 1;
+
+      if (!force && totalBudget) {
         // Calculate the total for this specific expense (including tax/quantity)
-        let expenseTotal = num * (expenseType === 'individual' ? quantity : 1);
+        let expenseTotal = num * (expenseType === 'individual' ? qtyNum : 1);
         if (includeTax) {
-          expenseTotal += expenseTotal * (taxPercentage / 100);
+          expenseTotal += expenseTotal * (taxNum / 100);
         }
 
+        const oldTotal = Number(currentTotalExpenses);
+        const newTotal = oldTotal + expenseTotal;
+        const budget = Number(totalBudget);
+        
+        const oldBurnRate = (oldTotal / budget) * 100;
+        const newBurnRate = (newTotal / budget) * 100;
+
         // Budget check
-        if (totalBudget && (Number(currentTotalExpenses) + expenseTotal > Number(totalBudget))) {
+        if (newTotal > budget) {
+          setBudgetWarningMessage(t("you have used all your budget"));
+          setWarningAction(() => () => setShowBudgetWarning(false)); // Blocking
+          setShowBudgetWarning(true);
+          return;
+        } else if (oldTotal < budget && newTotal >= budget) {
+          setBudgetWarningMessage(t("you have used all your budget"));
+          setWarningAction(() => () => {
+            setShowBudgetWarning(false);
+            processSubmit(true);
+          });
+          setShowBudgetWarning(true);
+          return;
+        } else if (oldBurnRate < 80 && newBurnRate >= 80) {
+          setBudgetWarningMessage(t("you have used 80% of the budget"));
+          setWarningAction(() => () => {
+            setShowBudgetWarning(false);
+            processSubmit(true);
+          });
+          setShowBudgetWarning(true);
+          return;
+        } else if (oldBurnRate < 50 && newBurnRate >= 50) {
+          setBudgetWarningMessage(t("you have used 50% of the budget"));
+          setWarningAction(() => () => {
+            setShowBudgetWarning(false);
+            processSubmit(true);
+          });
           setShowBudgetWarning(true);
           return;
         }
@@ -122,15 +165,12 @@ export default function AddExpenseModal({
         amount: num,
         title: title || "",
         paid_by: parseInt(payer, 10) || (members[0]?.id ?? 0),
-        participants:
-          Array.isArray(selected) && selected.length > 0
-            ? selected
-            : members.map((m) => m.id),
+        participants: selected,
         date: new Date().toISOString(),
         archived: false,
         expense_type: expenseType,
-        quantity: quantity,
-        tax_percentage: taxPercentage,
+        quantity: qtyNum,
+        tax_percentage: taxNum,
         include_tax: includeTax,
       };
 
@@ -230,7 +270,7 @@ export default function AddExpenseModal({
                       ? "bg-gray-50 border-gray-300"
                       : "bg-gray-700 border-gray-600 text-white"
                   } focus:ring-2 focus:ring-indigo-500 hover:border-indigo-500 transition duration-150 ease-in-out [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]`}
-                  placeholder="0.00"
+                  placeholder="0"
                   aria-label="amount"
                 />
               </div>
@@ -273,54 +313,65 @@ export default function AddExpenseModal({
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-              {expenseType === 'individual' && (
-                <div className="col-span-1">
-                  <label className="block text-sm font-medium mb-2">{t("Quantity")}</label>
-                  <input
-                    type="number"
-                    value={quantity}
-                    onChange={(e) => setQuantity(Number(e.target.value))}
-                    className={`w-full p-3 rounded-md border ${
-                      theme === "light"
-                        ? "bg-gray-50 border-gray-300"
-                        : "bg-gray-700 border-gray-600 text-white"
-                    } focus:ring-2 focus:ring-indigo-500 hover:border-indigo-500 transition duration-150 ease-in-out`}
-                    placeholder="1"
-                  />
-                </div>
-              )}
-              <div className={`${expenseType === 'individual' ? 'col-span-1' : 'col-span-2'}`}>
-                <label className="block text-sm font-medium mb-2">{t("Tax")}</label>
-                <input
-                  type="number"
-                  value={taxPercentage}
-                  onChange={(e) => setTaxPercentage(Number(e.target.value))}
-                  className={`w-full p-3 rounded-md border ${
-                    theme === "light"
-                      ? "bg-gray-50 border-gray-300"
-                      : "bg-gray-700 border-gray-600 text-white"
-                  } focus:ring-2 focus:ring-indigo-500 hover:border-indigo-500 transition duration-150 ease-in-out`}
-                  placeholder="0"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-              <div className="col-span-1 flex items-end">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={includeTax}
-                    onChange={(e) => setIncludeTax(e.target.checked)}
-                    className="rounded"
-                  />
-                  <span className="text-sm font-medium">{t("Include Tax")}</span>
-                </label>
-              </div>
-            </div>
-
-            <div className="mt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        {expenseType === 'individual' && (
+                          <div className="col-span-1">
+                            <label className="block text-sm font-medium mb-2">{t("Quantity")}</label>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={quantity}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === "" || /^[0-9]*$/.test(val)) {
+                                  setQuantity(val);
+                                }
+                              }}
+                              className={`w-full p-3 rounded-md border ${
+                                theme === "light"
+                                  ? "bg-gray-50 border-gray-300"
+                                  : "bg-gray-700 border-gray-600 text-white"
+                              } focus:ring-2 focus:ring-indigo-500 hover:border-indigo-500 transition duration-150 ease-in-out`}
+                              placeholder="1"
+                            />
+                          </div>
+                        )}
+                        <div className={`${expenseType === 'individual' ? 'col-span-1' : 'col-span-2'} flex items-end pb-2`}>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={includeTax}
+                              onChange={(e) => setIncludeTax(e.target.checked)}
+                              className="rounded w-5 h-5 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                            />
+                            <span className="text-sm font-medium">{t("Include Tax")}</span>
+                          </label>
+                        </div>
+                      </div>
+            
+                      {includeTax && (
+                        <div className="mt-6">
+                          <label className="block text-sm font-medium mb-2">{t("Tax")}</label>
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            value={taxPercentage}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                                setTaxPercentage(val);
+                              }
+                            }}
+                            className={`w-full p-3 rounded-md border ${
+                              theme === "light"
+                                ? "bg-gray-50 border-gray-300"
+                                : "bg-gray-700 border-gray-600 text-white"
+                            } focus:ring-2 focus:ring-indigo-500 hover:border-indigo-500 transition duration-150 ease-in-out`}
+                            placeholder="0"
+                          />
+                        </div>
+                      )}
+                        <div className="mt-6">
               <div className="text-sm font-medium mb-3">{t("Split with")}</div>
               <div className="flex flex-wrap gap-3">
                 {members.map((m) => (
@@ -371,11 +422,9 @@ export default function AddExpenseModal({
       <ConfirmDialog
         open={showBudgetWarning}
         title={t("Budget Warning")}
-        description={t("you have used all of the budget")}
+        description={budgetWarningMessage}
         confirmText={t("OK")}
-        onConfirm={() => {
-          setShowBudgetWarning(false);
-        }}
+        onConfirm={warningAction}
         isDestructive={false}
       />
     </>

@@ -9,7 +9,6 @@ export default function Signup({ onSignupSuccess, onShowLogin }) {
   const { theme } = useContext(ThemeContext);
 
   const [fullName, setFullName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
@@ -46,7 +45,7 @@ export default function Signup({ onSignupSuccess, onShowLogin }) {
       const data = err?.response?.data;
       const msg =
         (data &&
-          (data.detail || data.email || data.non_field_errors || data)) ||
+          (data.detail || data.error || data.email || data.non_field_errors || data)) ||
         err?.message ||
         t("Failed to register");
       setError(typeof msg === "string" ? msg : JSON.stringify(msg));
@@ -82,13 +81,6 @@ export default function Signup({ onSignupSuccess, onShowLogin }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="p-2 rounded border dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400"
-          />
-          <input
-            type="tel"
-            placeholder={t("Phone (optional)")}
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
             className="p-2 rounded border dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400"
           />
           <input
