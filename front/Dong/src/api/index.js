@@ -20,4 +20,22 @@ apiClient.interceptors.request.use(
     }
 );
 
+let logoutCallback = null;
+
+export const setupInterceptors = (logout) => {
+    logoutCallback = logout;
+};
+
+apiClient.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            if (logoutCallback) {
+                logoutCallback();
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 export default apiClient;
