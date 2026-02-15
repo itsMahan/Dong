@@ -165,7 +165,7 @@ export default function TricountsPage({ onCreateGroup, onLogout }) {
                                   {group.budget_forecast.days_remaining !== null && (
                                     <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
                                       <span>{t("Forecast")}:</span>
-                                      <span>{Math.ceil(group.budget_forecast.days_remaining)} {t("days")}</span>
+                                      <span>{Number(group.budget_forecast.days_remaining).toFixed(1)} {t("days")}</span>
                                     </div>
                                   )}
                                 </div>
