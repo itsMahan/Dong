@@ -1,10 +1,13 @@
 from datetime import timedelta
+from logging import exception
+
 from kavenegar import *
 import random
 from .models import User, OtpCode
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
+import threading
 
 
 def send_otp_code(phone_number):
@@ -40,23 +43,33 @@ def can_request_otp(email):
         return True
 
 
+def email_thread_task(subject, message, email_from, reciptient_list, user, code):
+    try:
+        send_mail(subject, message, email_from, reciptient_list)
+
+        OtpCode.objects.create(
+            user=user,
+            code=code,
+            code_expiry=timezone.now() + timedelta(minutes=2)
+        )
+    except Exception as e:
+        print(f"Background Email Error: {e}")
+
+
 def send_otp_code_via_email(email):
     if not can_request_otp(email):
         return False
 
+    user = User.objects.get(email=email)
     subject = 'your Dong app verification code'
     code = random.randint(1000, 9999)
     message = f'{code}کد تایید دنگ: '
     email_from = settings.EMAIL_HOST_USER
-    try:
-        send_mail(subject, message, email_from, [email])
-        user = User.objects.get(email=email)
-        OtpCode.objects.create(
-            user = user,
-            code = code,
-            code_expiry = timezone.now() + timedelta(minutes=2)
-        )
-        return True
-    except Exception as e:
-        print(f"Error: {e}")
-        return False
+
+    thread = threading.Thread(
+        target=email_thread_task,
+        args=(subject, message, email_from, [email], user, code)
+    )
+    thread.start()
+
+    return True
