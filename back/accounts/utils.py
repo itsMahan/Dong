@@ -12,12 +12,14 @@ import threading
 
 def send_otp_code(phone_number):
     try:
-        api = KavenegarAPI('37744F66472B576E51713139724856576A4C616B5379485059567778555345362F455A4E367978563758413D')
+        api = KavenegarAPI(
+            "37744F66472B576E51713139724856576A4C616B5379485059567778555345362F455A4E367978563758413D"
+        )
         code = random.randint(1000, 9999)
         params = {
-            'sender': '2000660110',  # optional
-            'receptor': phone_number,  # multiple mobile number, split by comma
-            'message': f'{code}   کد تایید دنگ: ',
+            "sender": "2000660110",  # optional
+            "receptor": phone_number,  # multiple mobile number, split by comma
+            "message": f"{code}   کد تایید دنگ: ",
         }
         response = api.sms_send(params)
         print(response)
@@ -35,8 +37,7 @@ def can_request_otp(email):
     try:
         user = User.objects.get(email=email)
         recent_otp = OtpCode.objects.filter(
-            user = user,
-            created_at__gte = timezone.now() - timedelta(minutes=2)
+            user=user, created_at__gte=timezone.now() - timedelta(minutes=2)
         ).exists()
         return not recent_otp
     except User.DoesNotExist:
@@ -48,9 +49,7 @@ def email_thread_task(subject, message, email_from, reciptient_list, user, code)
         send_mail(subject, message, email_from, reciptient_list)
 
         OtpCode.objects.create(
-            user=user,
-            code=code,
-            code_expiry=timezone.now() + timedelta(minutes=2)
+            user=user, code=code, code_expiry=timezone.now() + timedelta(minutes=2)
         )
     except Exception as e:
         print(f"Background Email Error: {e}")
@@ -61,14 +60,14 @@ def send_otp_code_via_email(email):
         return False
 
     user = User.objects.get(email=email)
-    subject = 'your Dong app verification code'
+    subject = "your Dong app verification code"
     code = random.randint(1000, 9999)
-    message = f'{code}کد تایید دنگ: '
+    message = f"{code}کد تایید دنگ: "
     email_from = settings.EMAIL_HOST_USER
 
     thread = threading.Thread(
         target=email_thread_task,
-        args=(subject, message, email_from, [email], user, code)
+        args=(subject, message, email_from, [email], user, code),
     )
     thread.start()
 

@@ -8,22 +8,22 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'full_name', 'is_verified', 'password', 'password2']
+        fields = ["email", "full_name", "is_verified", "password", "password2"]
         extra_kwargs = {
-            'password': {'write_only': True},
-            'is_verified': {'read_only': True},
+            "password": {"write_only": True},
+            "is_verified": {"read_only": True},
         }
 
     def validate(self, attrs):
-        if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError({'password': "passwords didn't match."})
+        if attrs["password"] != attrs["password2"]:
+            raise serializers.ValidationError({"password": "passwords didn't match."})
         return attrs
 
     def create(self, validated_data):
         user = User.objects.create_user(
-            email=validated_data['email'],
-            password=validated_data['password'],
-            full_name=validated_data.get('full_name', ''),
+            email=validated_data["email"],
+            password=validated_data["password"],
+            full_name=validated_data.get("full_name", ""),
         )
         return user
 
@@ -40,6 +40,7 @@ class ResendOtpSerializer(serializers.Serializer):
 class ForgotPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
+
 class ResetPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField(max_length=4)
@@ -48,10 +49,8 @@ class ResetPasswordSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         """چک کردن یکسان بودن رمزها"""
-        if attrs['new_password'] != attrs['new_password2']:
-            raise serializers.ValidationError({
-                'new_password': "Passwords don't match"
-            })
+        if attrs["new_password"] != attrs["new_password2"]:
+            raise serializers.ValidationError({"new_password": "Passwords don't match"})
         return attrs
 
 
@@ -60,15 +59,17 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def get_token(cls, user):
         token = super().get_token(user)
 
-        token['email'] = user.email
-        token['full_name'] = user.full_name
+        token["email"] = user.email
+        token["full_name"] = user.full_name
 
         return token
 
     def validate(self, attrs):
         data = super().validate(attrs)
         if not self.user.is_verified:
-            raise serializers.ValidationError("Account not verified. Please verify your email first.")
+            raise serializers.ValidationError(
+                "Account not verified. Please verify your email first."
+            )
         data["user"] = {
             "id": self.user.id,
             "email": self.user.email,

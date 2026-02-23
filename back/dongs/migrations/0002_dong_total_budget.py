@@ -6,13 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dongs', '0001_initial'),
+        ("dongs", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='dong',
-            name='total_budget',
-            field=models.DecimalField(blank=True, decimal_places=2, help_text='بودجه کل برای این دنگ (اختیاری)', max_digits=12, null=True),
+            model_name="dong",
+            name="total_budget",
+            field=models.DecimalField(
+                blank=True,
+                decimal_places=2,
+                help_text="بودجه کل برای این دنگ (اختیاری)",
+                max_digits=12,
+                null=True,
+            ),
         ),
     ]
