@@ -29,7 +29,10 @@ class DongSerializer(serializers.ModelSerializer):
         # 'obj' is the Dong instance.
         # obj.members.all() gets all related DongMember objects.
         # We create a list of just their names.
-        return [{"id": member.id, "name": member.name} for member in obj.members.all()]
+        return [
+            {"id": member.id, "name": member.name}
+            for member in obj.members.all()
+        ]
 
     def get_total_expenses(self, obj):
         """محاسبه مجموع خرج‌ها"""
@@ -93,7 +96,9 @@ class ExpenseListSerializer(serializers.ModelSerializer):
 
 
 class ExpenseUpdateSerializer(serializers.ModelSerializer):
-    paid_by = serializers.PrimaryKeyRelatedField(queryset=DongMember.objects.all())
+    paid_by = serializers.PrimaryKeyRelatedField(
+        queryset=DongMember.objects.all()
+    )
     participants = serializers.PrimaryKeyRelatedField(
         many=True, queryset=DongMember.objects.all(), required=False
     )
@@ -130,11 +135,15 @@ class ExpenseUpdateSerializer(serializers.ModelSerializer):
 
 
 class ExpenseCreateSerializer(serializers.ModelSerializer):
-    paid_by = serializers.PrimaryKeyRelatedField(queryset=DongMember.objects.all())
+    paid_by = serializers.PrimaryKeyRelatedField(
+        queryset=DongMember.objects.all()
+    )
     participants = serializers.PrimaryKeyRelatedField(
         many=True, queryset=DongMember.objects.all()
     )
-    paid_by = serializers.PrimaryKeyRelatedField(queryset=DongMember.objects.all())
+    paid_by = serializers.PrimaryKeyRelatedField(
+        queryset=DongMember.objects.all()
+    )
 
     class Meta:
         model = Expense
@@ -157,11 +166,15 @@ class ExpenseCreateSerializer(serializers.ModelSerializer):
         quantity = data.get("quantity", 1)
 
         if paid_by.dong_id != dong_id:
-            raise serializers.ValidationError("پرداخت‌کننده باید عضو این گروه باشه!")
+            raise serializers.ValidationError(
+                "پرداخت‌کننده باید عضو این گروه باشه!"
+            )
 
         for member in participants:
             if member.dong.id != dong_id:
-                raise serializers.ValidationError(f"{member.name} عضو این گروه نیست!")
+                raise serializers.ValidationError(
+                    f"{member.name} عضو این گروه نیست!"
+                )
 
         if expense_type == "individual" and len(participants) == 0:
             raise serializers.ValidationError(

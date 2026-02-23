@@ -44,12 +44,16 @@ def can_request_otp(email):
         return True
 
 
-def email_thread_task(subject, message, email_from, reciptient_list, user, code):
+def email_thread_task(
+    subject, message, email_from, reciptient_list, user, code
+):
     try:
         send_mail(subject, message, email_from, reciptient_list)
 
         OtpCode.objects.create(
-            user=user, code=code, code_expiry=timezone.now() + timedelta(minutes=2)
+            user=user,
+            code=code,
+            code_expiry=timezone.now() + timedelta(minutes=2),
         )
     except Exception as e:
         print(f"Background Email Error: {e}")

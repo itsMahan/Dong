@@ -29,7 +29,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class OtpCode(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="codes")
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="codes"
+    )
     code = models.PositiveSmallIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     code_expiry = models.DateTimeField()

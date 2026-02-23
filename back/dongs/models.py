@@ -4,7 +4,9 @@ from accounts.models import User
 
 class Dong(models.Model):
     title = models.CharField(max_length=255)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="dongs")
+    created_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="dongs"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     total_budget = models.DecimalField(
         max_digits=12,
@@ -109,7 +111,9 @@ class Dong(models.Model):
         from django.utils import timezone
         from datetime import timedelta
 
-        forecast_end_date = timezone.now() + timedelta(days=float(days_remaining))
+        forecast_end_date = timezone.now() + timedelta(
+            days=float(days_remaining)
+        )
 
         return {
             "days_remaining": float(round(days_remaining, 2)),
@@ -121,7 +125,9 @@ class Dong(models.Model):
 
 
 class DongMember(models.Model):
-    dong = models.ForeignKey(Dong, on_delete=models.CASCADE, related_name="members")
+    dong = models.ForeignKey(
+        Dong, on_delete=models.CASCADE, related_name="members"
+    )
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -135,7 +141,9 @@ class Expense(models.Model):
         ("individual", "Individual Expense"),
     ]
 
-    dong = models.ForeignKey(Dong, on_delete=models.CASCADE, related_name="expenses")
+    dong = models.ForeignKey(
+        Dong, on_delete=models.CASCADE, related_name="expenses"
+    )
     title = models.CharField(max_length=255)
     amount = models.IntegerField()
     paid_by = models.ForeignKey(
@@ -166,7 +174,9 @@ class Expense(models.Model):
         return base_amount
 
     def __str__(self):
-        return f"{self.title} in {self.dong.title} paid by {self.paid_by.name}"
+        return (
+            f"{self.title} in {self.dong.title} paid by {self.paid_by.name}"
+        )
 
 
 class ExpenseParticipant(models.Model):

@@ -8,7 +8,13 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["email", "full_name", "is_verified", "password", "password2"]
+        fields = [
+            "email",
+            "full_name",
+            "is_verified",
+            "password",
+            "password2",
+        ]
         extra_kwargs = {
             "password": {"write_only": True},
             "is_verified": {"read_only": True},
@@ -16,7 +22,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if attrs["password"] != attrs["password2"]:
-            raise serializers.ValidationError({"password": "passwords didn't match."})
+            raise serializers.ValidationError(
+                {"password": "passwords didn't match."}
+            )
         return attrs
 
     def create(self, validated_data):
@@ -50,7 +58,9 @@ class ResetPasswordSerializer(serializers.Serializer):
     def validate(self, attrs):
         """چک کردن یکسان بودن رمزها"""
         if attrs["new_password"] != attrs["new_password2"]:
-            raise serializers.ValidationError({"new_password": "Passwords don't match"})
+            raise serializers.ValidationError(
+                {"new_password": "Passwords don't match"}
+            )
         return attrs
 
 

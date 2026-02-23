@@ -61,7 +61,9 @@ class UserVerifyOtp(APIView):
                 .first()
             )
             if not otp:
-                return Response(data="Invalid Code", status=status.HTTP_404_NOT_FOUND)
+                return Response(
+                    data="Invalid Code", status=status.HTTP_404_NOT_FOUND
+                )
             if otp.is_valid(code):
                 otp.is_used = True
                 otp.save()
@@ -110,7 +112,9 @@ class ResendOtpView(APIView):
         serializer = ResendOtpSerializer(data=request.data)
 
         if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
 
         email = serializer.data["email"]
 
@@ -125,7 +129,8 @@ class ResendOtpView(APIView):
         # ارسال کد
         if send_otp_code_via_email(email):
             return Response(
-                {"message": "New code has been sent"}, status=status.HTTP_200_OK
+                {"message": "New code has been sent"},
+                status=status.HTTP_200_OK,
             )
         else:
             return Response(
@@ -141,7 +146,9 @@ class ForgotPasswordView(APIView):
     def post(self, request):
         serializer = ForgotPasswordSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
 
         email = serializer.validated_data["email"]
 
@@ -155,7 +162,8 @@ class ForgotPasswordView(APIView):
 
         if send_otp_code_via_email(email):
             return Response(
-                {"message": "New code has been sent"}, status=status.HTTP_200_OK
+                {"message": "New code has been sent"},
+                status=status.HTTP_200_OK,
             )
         else:
             return Response(
@@ -171,7 +179,9 @@ class PasswordResetView(APIView):
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
 
         email = serializer.validated_data["email"]
         code = int(serializer.validated_data["otp"])
@@ -206,11 +216,13 @@ class PasswordResetView(APIView):
             user.set_password(new_password)
             user.save()
             return Response(
-                {"message": "Password changed successfully"}, status=status.HTTP_200_OK
+                {"message": "Password changed successfully"},
+                status=status.HTTP_200_OK,
             )
         else:
             return Response(
-                {"error": "Code expired or invalid"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "Code expired or invalid"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
 

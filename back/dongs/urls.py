@@ -5,8 +5,12 @@ app_name = "dongs"
 urlpatterns = [
     path("list/", views.DongListView.as_view(), name="list_dongs"),
     path("create/", views.DongCreateView.as_view(), name="create_dong"),
-    path("delete/<int:pk>/", views.DongDeleteView.as_view(), name="delete_dong"),
-    path("update/<int:pk>/", views.DongUpdateView.as_view(), name="update_dong"),
+    path(
+        "delete/<int:pk>/", views.DongDeleteView.as_view(), name="delete_dong"
+    ),
+    path(
+        "update/<int:pk>/", views.DongUpdateView.as_view(), name="update_dong"
+    ),
     path("member/add/", views.AddDongMemberView.as_view(), name="add_member"),
     path(
         "member/delete/<int:dong_id>/<str:member_name>/",
@@ -19,7 +23,9 @@ urlpatterns = [
         name="list_expenses",
     ),
     path(
-        "expense/add/<int:dong_id>/", views.AddExpenseView.as_view(), name="add_expense"
+        "expense/add/<int:dong_id>/",
+        views.AddExpenseView.as_view(),
+        name="add_expense",
     ),
     path(
         "expense/update/<int:expense_id>/",
@@ -37,9 +43,13 @@ urlpatterns = [
         name="add_expense_participant",
     ),
     # گزارش‌ها
-    path("balance/<int:dong_id>/", views.BalanceView.as_view(), name="balance"),
     path(
-        "settlement/<int:dong_id>/", views.SettlementView.as_view(), name="settlement"
+        "balance/<int:dong_id>/", views.BalanceView.as_view(), name="balance"
+    ),
+    path(
+        "settlement/<int:dong_id>/",
+        views.SettlementView.as_view(),
+        name="settlement",
     ),
     path(
         "member-detail/<int:dong_id>/<str:member_name>/",

@@ -17,7 +17,9 @@ class Command(BaseCommand):
 
         if is_dry_run:
             self.stdout.write(
-                self.style.SUCCESS("Running in dry-run mode. No data will be deleted.")
+                self.style.SUCCESS(
+                    "Running in dry-run mode. No data will be deleted."
+                )
             )
 
         self.stdout.write("Starting to scan for corrupted expenses...")
@@ -61,5 +63,7 @@ class Command(BaseCommand):
             )
         else:
             self.stdout.write(
-                self.style.SUCCESS("Scan complete. No corrupted expenses found.")
+                self.style.SUCCESS(
+                    "Scan complete. No corrupted expenses found."
+                )
             )

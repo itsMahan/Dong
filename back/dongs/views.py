@@ -14,7 +14,9 @@ class DongCreateView(APIView):
         serializer = DongSerializer(data=request.data)
 
         if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
 
         serializer.save(created_by=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -37,11 +39,14 @@ class DongDeleteView(APIView):
             dong = Dong.objects.get(id=pk)
         except Dong.DoesNotExist:
             return Response(
-                {"error": "No Dong has been found"}, status=status.HTTP_404_NOT_FOUND
+                {"error": "No Dong has been found"},
+                status=status.HTTP_404_NOT_FOUND,
             )
         self.check_object_permissions(request, dong)
         dong.delete()
-        return Response("dong has been deleted successfully", status=status.HTTP_200_OK)
+        return Response(
+            "dong has been deleted successfully", status=status.HTTP_200_OK
+        )
 
 
 class DongUpdateView(APIView):
@@ -53,7 +58,8 @@ class DongUpdateView(APIView):
             dong = Dong.objects.get(id=pk)
         except Dong.DoesNotExist:
             return Response(
-                {"error": "No Dong has been found"}, status=status.HTTP_404_NOT_FOUND
+                {"error": "No Dong has been found"},
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         serializer = DongSerializer(dong, data=request.data, partial=True)
@@ -62,10 +68,13 @@ class DongUpdateView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(
-                "dong has been updated successfully", status=status.HTTP_200_OK
+                "dong has been updated successfully",
+                status=status.HTTP_200_OK,
             )
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class AddDongMemberView(APIView):
@@ -76,7 +85,9 @@ class AddDongMemberView(APIView):
         serializer = DongMemberSerializer(data=request.data)
 
         if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
 
         if DongMember.objects.filter(
             dong=serializer.validated_data["dong"],
@@ -92,7 +103,9 @@ class AddDongMemberView(APIView):
                 name=serializer.validated_data["name"],
             )
 
-        return Response("Member added successfully", status=status.HTTP_200_OK)
+        return Response(
+            "Member added successfully", status=status.HTTP_200_OK
+        )
 
 
 class DeleteDongMember(APIView):
@@ -103,7 +116,8 @@ class DeleteDongMember(APIView):
             dong = Dong.objects.get(id=dong_id)
         except Dong.DoesNotExist:
             return Response(
-                {"error": "No Dong has been found"}, status=status.HTTP_404_NOT_FOUND
+                {"error": "No Dong has been found"},
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         try:
@@ -119,7 +133,8 @@ class DeleteDongMember(APIView):
 
         member.delete()
         return Response(
-            "dong member has been deleted successfully", status=status.HTTP_200_OK
+            "dong member has been deleted successfully",
+            status=status.HTTP_200_OK,
         )
 
 
@@ -143,12 +158,16 @@ class AddExpenseView(APIView):
 
         if serializer.is_valid():
             participants = serializer.validated_data.pop("participants")
-            expense_type = serializer.validated_data.get("expense_type", "total")
+            expense_type = serializer.validated_data.get(
+                "expense_type", "total"
+            )
 
             # محاسبه مبلغ کل خرج جدید
             amount = serializer.validated_data.get("amount")
             quantity = serializer.validated_data.get("quantity", 1)
-            tax_percentage = serializer.validated_data.get("tax_percentage", 10.00)
+            tax_percentage = serializer.validated_data.get(
+                "tax_percentage", 10.00
+            )
             include_tax = serializer.validated_data.get("include_tax", False)
 
             base_amount = amount * quantity
@@ -167,9 +186,15 @@ class AddExpenseView(APIView):
                             "error": "بودجه کافی نیست!",
                             "details": {
                                 "total_budget": float(dong.total_budget),
-                                "current_expenses": round(dong.get_total_expenses(), 2),
-                                "remaining_budget": round(remaining_budget, 2),
-                                "new_expense_amount": round(new_expense_total, 2),
+                                "current_expenses": round(
+                                    dong.get_total_expenses(), 2
+                                ),
+                                "remaining_budget": round(
+                                    remaining_budget, 2
+                                ),
+                                "new_expense_amount": round(
+                                    new_expense_total, 2
+                                ),
                                 "shortage": round(
                                     new_expense_total - remaining_budget, 2
                                 ),
@@ -183,7 +208,9 @@ class AddExpenseView(APIView):
 
             # اضافه کردن participants
             for member in participants:
-                ExpenseParticipant.objects.create(expense=expense, member=member)
+                ExpenseParticipant.objects.create(
+                    expense=expense, member=member
+                )
 
             return Response(
                 {
@@ -197,7 +224,9 @@ class AddExpenseView(APIView):
                     "total_amount": round(expense.get_total_amount(), 2),
                     "budget_info": {
                         "total_budget": (
-                            float(dong.total_budget) if dong.total_budget else None
+                            float(dong.total_budget)
+                            if dong.total_budget
+                            else None
                         ),
                         "total_expenses": round(dong.get_total_expenses(), 2),
                         "remaining_budget": (
@@ -224,10 +253,13 @@ class UpdateExpenseView(APIView):
             expense = Expense.objects.get(id=expense_id)
         except Expense.DoesNotExist:
             return Response(
-                {"error": "No Expense has been found"}, status=status.HTTP_404_NOT_FOUND
+                {"error": "No Expense has been found"},
+                status=status.HTTP_404_NOT_FOUND,
             )
 
-        serializer = ExpenseUpdateSerializer(expense, data=request.data, partial=True)
+        serializer = ExpenseUpdateSerializer(
+            expense, data=request.data, partial=True
+        )
 
         if serializer.is_valid():
             dong = expense.dong
@@ -237,7 +269,9 @@ class UpdateExpenseView(APIView):
 
             # محاسبه مبلغ جدید خرج (بعد از آپدیت)
             amount = serializer.validated_data.get("amount", expense.amount)
-            quantity = serializer.validated_data.get("quantity", expense.quantity)
+            quantity = serializer.validated_data.get(
+                "quantity", expense.quantity
+            )
             tax_percentage = serializer.validated_data.get(
                 "tax_percentage", expense.tax_percentage
             )
@@ -265,10 +299,18 @@ class UpdateExpenseView(APIView):
                             "error": "بودجه کافی نیست!",
                             "details": {
                                 "total_budget": float(dong.total_budget),
-                                "current_expenses": round(dong.get_total_expenses(), 2),
-                                "old_expense_amount": round(old_expense_total, 2),
-                                "new_expense_amount": round(new_expense_total, 2),
-                                "available_budget": round(remaining_budget, 2),
+                                "current_expenses": round(
+                                    dong.get_total_expenses(), 2
+                                ),
+                                "old_expense_amount": round(
+                                    old_expense_total, 2
+                                ),
+                                "new_expense_amount": round(
+                                    new_expense_total, 2
+                                ),
+                                "available_budget": round(
+                                    remaining_budget, 2
+                                ),
                                 "shortage": round(
                                     new_expense_total - remaining_budget, 2
                                 ),
@@ -277,7 +319,9 @@ class UpdateExpenseView(APIView):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
-            participants_data = serializer.validated_data.pop("participants", None)
+            participants_data = serializer.validated_data.pop(
+                "participants", None
+            )
 
             instance = serializer.save()
 
@@ -287,13 +331,19 @@ class UpdateExpenseView(APIView):
                     participant.delete()
                 # Add new participants
                 for member in participants_data:
-                    ExpenseParticipant.objects.create(expense=instance, member=member)
+                    ExpenseParticipant.objects.create(
+                        expense=instance, member=member
+                    )
 
             # After saving, serialize the updated data with ExpenseListSerializer
             response_serializer = ExpenseListSerializer(instance)
-            return Response(response_serializer.data, status=status.HTTP_200_OK)
+            return Response(
+                response_serializer.data, status=status.HTTP_200_OK
+            )
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class DeleteExpenseView(APIView):
@@ -304,7 +354,8 @@ class DeleteExpenseView(APIView):
             expense = Expense.objects.get(id=pk)
         except Expense.DoesNotExist:
             return Response(
-                {"error": "No Expense has been found"}, status=status.HTTP_404_NOT_FOUND
+                {"error": "No Expense has been found"},
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         expense.delete()
@@ -330,7 +381,9 @@ class AddExpenseParticipantView(APIView):
         serializer = ExpenseParticipantSerializer(data=request.data)
 
         if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
 
         if ExpenseParticipant.objects.filter(
             expense=serializer.validated_data["expense"],
@@ -346,7 +399,8 @@ class AddExpenseParticipantView(APIView):
                 member=serializer.validated_data["member"],
             )
         return Response(
-            "Expense participant added successfully", status=status.HTTP_200_OK
+            "Expense participant added successfully",
+            status=status.HTTP_200_OK,
         )
 
 
@@ -460,8 +514,14 @@ class SettlementView(APIView):
             member_balances[member.name] = float(round(balance, 2))
 
         # ✅ الگوریتم بهبود یافته: جداسازی طلبکاران و بدهکاران
-        creditors = [(name, bal) for name, bal in member_balances.items() if bal > 0]
-        debtors = [(name, abs(bal)) for name, bal in member_balances.items() if bal < 0]
+        creditors = [
+            (name, bal) for name, bal in member_balances.items() if bal > 0
+        ]
+        debtors = [
+            (name, abs(bal))
+            for name, bal in member_balances.items()
+            if bal < 0
+        ]
 
         # مرتب‌سازی برای بهینه‌سازی
         creditors.sort(key=lambda x: x[1], reverse=True)
@@ -500,7 +560,10 @@ class SettlementView(APIView):
                 creditor_name,
                 creditor_amount - settle_amount,
             )
-            debtor_remaining[debtor_idx] = (debtor_name, debtor_amount - settle_amount)
+            debtor_remaining[debtor_idx] = (
+                debtor_name,
+                debtor_amount - settle_amount,
+            )
 
             # حرکت به بعدی اگر تسویه شد
             if creditor_remaining[creditor_idx][1] < 0.01:
@@ -514,10 +577,12 @@ class SettlementView(APIView):
                 sum(exp.get_total_amount() for exp in dong.expenses.all()), 2
             ),
             "creditors": [
-                {"name": name, "amount": round(amt, 2)} for name, amt in creditors
+                {"name": name, "amount": round(amt, 2)}
+                for name, amt in creditors
             ],
             "debtors": [
-                {"name": name, "amount": round(amt, 2)} for name, amt in debtors
+                {"name": name, "amount": round(amt, 2)}
+                for name, amt in debtors
             ],
             "total_transactions": len(transactions),
         }
@@ -612,7 +677,9 @@ class MemberDetailView(APIView):
                 "total_share": round(total_share, 2),
                 "balance": round(balance, 2),
                 "status": (
-                    "طلبکار" if balance > 0 else "بدهکار" if balance < 0 else "تسویه"
+                    "طلبکار"
+                    if balance > 0
+                    else "بدهکار" if balance < 0 else "تسویه"
                 ),
                 "paid_expenses": paid_list,
                 "participated_expenses": participated_list,

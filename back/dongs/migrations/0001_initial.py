@@ -100,7 +100,9 @@ class Migration(migrations.Migration):
                 ("include_tax", models.BooleanField(default=False)),
                 (
                     "quantity",
-                    models.IntegerField(default=1, help_text="Number of items"),
+                    models.IntegerField(
+                        default=1, help_text="Number of items"
+                    ),
                 ),
                 (
                     "created_by",
