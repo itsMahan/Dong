@@ -1,0 +1,21 @@
+services:
+  backend:
+    build: ./back
+    container_name: backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./back:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./back/.env
+
+  front-end:
+    build: ./front/Dong
+    container_name: frontend
+    volumes:
+      - ./front/Dong:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+
