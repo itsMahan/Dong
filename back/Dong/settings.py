@@ -44,10 +44,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
     "rest_framework",
     "drf_spectacular",
     "corsheaders",
     "rest_framework_simplejwt",
+
     "accounts.apps.AccountsConfig",
     "dongs.apps.DongConfig",
 ]

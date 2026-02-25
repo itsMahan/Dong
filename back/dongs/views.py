@@ -238,7 +238,7 @@ class AddExpenseView(APIView):
                         "forecast": dong.get_budget_forecast(),
                     },
                 },
-                status=201,
+                status=200,
             )
 
         return Response(serializer.errors, status=400)
