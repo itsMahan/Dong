@@ -81,6 +81,22 @@ Dong/
 
 ---
 
+## Generating Fake Data
+
+To populate the database with realistic test data, run:
+
+```bash
+# Default: creates 3 users with 2 dongs each
+docker-compose exec backend python manage.py create_fake_data
+
+# Custom amounts
+docker-compose exec backend python manage.py create_fake_data --users 5 --dongs 3
+```
+
+All generated users have the password: `pass@123`
+
+---
+
 ## Environment Variables
 
 The backend requires a `.env` file inside `back/`. Ask the project lead for the contents of this file.
