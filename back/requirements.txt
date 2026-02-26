@@ -9,6 +9,7 @@ django-cors-headers==4.9.0
 djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1
 drf-spectacular==0.29.0
+Faker==40.5.1
 flake8==7.3.0
 idna==3.11
 inflection==0.5.1
