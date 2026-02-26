@@ -32,3 +32,17 @@ jobs:
             -e EMAIL_HOST_PASSWORD=fakepassword \
             dong-backend:ci \
             python manage.py test
+
+  test-frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build frontend Docker image
+        run: docker build ./front/Dong --tag dong-frontend:ci
+
+      - name: Run frontend build check
+        run: |
+          docker run --rm dong-frontend:ci npm run build
