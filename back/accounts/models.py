@@ -17,29 +17,31 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['full_name']
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["full_name"]
 
     class Meta:
         verbose_name = "User"
         verbose_name_plural = "Users"
 
     def __str__(self):
-        return f'{self.full_name} - {self.email}'
+        return f"{self.full_name} - {self.email}"
 
 
 class OtpCode(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='codes')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="codes"
+    )
     code = models.PositiveSmallIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     code_expiry = models.DateTimeField()
     is_used = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
 
     def __str__(self):
-        return f'{self.user.full_name} - Code'
+        return f"{self.user.full_name} - Code"
 
     # def set_code(self, otp_code):
     #     self.code = otp_code
@@ -61,4 +63,6 @@ class OtpCode(models.Model):
 
     @classmethod
     def clean_expired_codes(cls):
-        cls.objects.filter(models.Q(is_used=True) | models.Q(code_expiry__lt=timezone.now())).delete()
+        cls.objects.filter(
+            models.Q(is_used=True) | models.Q(code_expiry__lt=timezone.now())
+        ).delete()

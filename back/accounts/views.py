@@ -21,13 +21,17 @@ class UserRegisterView(APIView):
             # OtpCode.objects.filter(user=user).delete()
 
             if send_otp_code_via_email(user.email):
-                return Response(data="Please Check Your Email Address for Verification Code",
-                                status=status.HTTP_201_CREATED)
+                return Response(
+                    data="Please Check Your Email Address for Verification Code",
+                    status=status.HTTP_201_CREATED,
+                )
             else:
                 # اگه ارسال ایمیل ناموفق بود، کاربر رو پاک کن
                 user.delete()
                 return Response(
-                    {'error': "Error while sending email, Try again"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                    {"error": "Error while sending email, Try again"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -40,20 +44,26 @@ class UserVerifyOtp(APIView):
         serializer = VerifyOtpSerializer(data=request.data)
 
         if serializer.is_valid():
-            email = serializer.data['email']
-            code = int(serializer.data['otp'])
+            email = serializer.data["email"]
+            code = int(serializer.data["otp"])
 
             try:
                 user = User.objects.get(email=email)
             except User.DoesNotExist:
-                return Response(data='User not found with given email address', status=status.HTTP_404_NOT_FOUND)
+                return Response(
+                    data="User not found with given email address",
+                    status=status.HTTP_404_NOT_FOUND,
+                )
 
-            otp = OtpCode.objects.filter(
-                user=user,
-                code=code,
-                is_used=False).order_by('-created_at').first()
+            otp = (
+                OtpCode.objects.filter(user=user, code=code, is_used=False)
+                .order_by("-created_at")
+                .first()
+            )
             if not otp:
-                return Response(data='Invalid Code', status=status.HTTP_404_NOT_FOUND)
+                return Response(
+                    data="Invalid Code", status=status.HTTP_404_NOT_FOUND
+                )
             if otp.is_valid(code):
                 otp.is_used = True
                 otp.save()
@@ -63,30 +73,37 @@ class UserVerifyOtp(APIView):
 
                 # ساخت توکن‌های JWT برای لاگین خودکار
                 refresh = RefreshToken.for_user(user)
-                refresh['email'] = user.email
-                refresh['full_name'] = user.full_name
+                refresh["email"] = user.email
+                refresh["full_name"] = user.full_name
 
-                return Response({
-                    'message': 'Account Verified Successfully',
-                    'tokens': {
-                        'refresh': str(refresh),
-                        'access': str(refresh.access_token),
+                return Response(
+                    {
+                        "message": "Account Verified Successfully",
+                        "tokens": {
+                            "refresh": str(refresh),
+                            "access": str(refresh.access_token),
+                        },
+                        "user": {
+                            "id": user.id,
+                            "email": user.email,
+                            "full_name": user.full_name,
+                        },
                     },
-                    'user': {
-                        'id': user.id,
-                        'email': user.email,
-                        'full_name': user.full_name,
-                    }
-                }, status=status.HTTP_200_OK)
+                    status=status.HTTP_200_OK,
+                )
 
             else:
-                return Response(data='Verification Code expired or invalid', status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    data="Verification Code expired or invalid",
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ResendOtpView(APIView):
     """ارسال مجدد کد OTP"""
+
     permission_classes = [permissions.AllowAny]
     serializer_class = ResendOtpSerializer
 
@@ -95,28 +112,30 @@ class ResendOtpView(APIView):
         serializer = ResendOtpSerializer(data=request.data)
 
         if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
 
-        email = serializer.data['email']
+        email = serializer.data["email"]
 
         try:
             User.objects.get(email=email)
         except User.DoesNotExist:
             return Response(
-                {'error': 'User not found with given email address'},
-                status=status.HTTP_404_NOT_FOUND
+                {"error": "User not found with given email address"},
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         # ارسال کد
         if send_otp_code_via_email(email):
             return Response(
-                {'message': 'New code has been sent'},
-                status=status.HTTP_200_OK
+                {"message": "New code has been sent"},
+                status=status.HTTP_200_OK,
             )
         else:
             return Response(
-                {'error': 'Error Sending email'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {"error": "Error Sending email"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
 
@@ -127,27 +146,29 @@ class ForgotPasswordView(APIView):
     def post(self, request):
         serializer = ForgotPasswordSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
 
-        email = serializer.validated_data['email']
+        email = serializer.validated_data["email"]
 
         try:
             User.objects.get(email=email)
         except User.DoesNotExist:
             return Response(
-                {'error': 'User not found with given email address'},
-                status=status.HTTP_404_NOT_FOUND
+                {"error": "User not found with given email address"},
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         if send_otp_code_via_email(email):
             return Response(
-                {'message': 'New code has been sent'},
-                status=status.HTTP_200_OK
+                {"message": "New code has been sent"},
+                status=status.HTTP_200_OK,
             )
         else:
             return Response(
-                {'error': 'Error Sending email'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {"error": "Error Sending email"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
 
@@ -158,30 +179,35 @@ class PasswordResetView(APIView):
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
 
-        email = serializer.validated_data['email']
-        code = int(serializer.validated_data['otp'])
-        new_password = serializer.validated_data['new_password']
+        email = serializer.validated_data["email"]
+        code = int(serializer.validated_data["otp"])
+        new_password = serializer.validated_data["new_password"]
 
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             return Response(
-                {'error': 'User not found with given email address'},
-                status=status.HTTP_404_NOT_FOUND
+                {"error": "User not found with given email address"},
+                status=status.HTTP_404_NOT_FOUND,
             )
 
-        otp = OtpCode.objects.filter(
-            user=user,
-            code=code,
-            is_used=False,
-        ).order_by('-created_at').first()
+        otp = (
+            OtpCode.objects.filter(
+                user=user,
+                code=code,
+                is_used=False,
+            )
+            .order_by("-created_at")
+            .first()
+        )
 
         if not otp:
             return Response(
-                {'error': 'Invalid Code'},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "Invalid Code"}, status=status.HTTP_400_BAD_REQUEST
             )
         if otp.is_valid(code):
             otp.is_used = True
@@ -190,13 +216,13 @@ class PasswordResetView(APIView):
             user.set_password(new_password)
             user.save()
             return Response(
-                {'message': 'Password changed successfully'},
-                status=status.HTTP_200_OK
+                {"message": "Password changed successfully"},
+                status=status.HTTP_200_OK,
             )
         else:
             return Response(
-                {'error': 'Code expired or invalid'},
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "Code expired or invalid"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
 

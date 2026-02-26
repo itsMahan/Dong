@@ -15,48 +15,152 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Dong',
+            name="Dong",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=255)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='dongs', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=255)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="dongs",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='DongMember',
+            name="DongMember",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('dong', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='members', to='dongs.dong')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "dong",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="members",
+                        to="dongs.dong",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Expense',
+            name="Expense",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=255)),
-                ('amount', models.IntegerField()),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('expense_type', models.CharField(choices=[('total', 'Total Expense'), ('individual', 'Individual Expense')], default='total', max_length=20)),
-                ('tax_percentage', models.DecimalField(decimal_places=2, default=10.0, help_text='Tax percentage (e.g., 10 for 10%)', max_digits=5)),
-                ('include_tax', models.BooleanField(default=False)),
-                ('quantity', models.IntegerField(default=1, help_text='Number of items')),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='created_expenses', to=settings.AUTH_USER_MODEL)),
-                ('dong', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='expenses', to='dongs.dong')),
-                ('paid_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='paid_expenses', to='dongs.dongmember')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=255)),
+                ("amount", models.IntegerField()),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "expense_type",
+                    models.CharField(
+                        choices=[
+                            ("total", "Total Expense"),
+                            ("individual", "Individual Expense"),
+                        ],
+                        default="total",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "tax_percentage",
+                    models.DecimalField(
+                        decimal_places=2,
+                        default=10.0,
+                        help_text="Tax percentage (e.g., 10 for 10%)",
+                        max_digits=5,
+                    ),
+                ),
+                ("include_tax", models.BooleanField(default=False)),
+                (
+                    "quantity",
+                    models.IntegerField(
+                        default=1, help_text="Number of items"
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="created_expenses",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "dong",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="expenses",
+                        to="dongs.dong",
+                    ),
+                ),
+                (
+                    "paid_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="paid_expenses",
+                        to="dongs.dongmember",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='ExpenseParticipant',
+            name="ExpenseParticipant",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('expense', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='participants', to='dongs.expense')),
-                ('member', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='shared_expenses', to='dongs.dongmember')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "expense",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="participants",
+                        to="dongs.expense",
+                    ),
+                ),
+                (
+                    "member",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="shared_expenses",
+                        to="dongs.dongmember",
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('expense', 'member')},
+                "unique_together": {("expense", "member")},
             },
         ),
     ]

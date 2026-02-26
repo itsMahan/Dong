@@ -4,7 +4,9 @@ from rest_framework import serializers
 
 class DongSerializer(serializers.ModelSerializer):
     members = serializers.SerializerMethodField()
-    total_budget = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, allow_null=True)
+    total_budget = serializers.DecimalField(
+        max_digits=12, decimal_places=2, required=False, allow_null=True
+    )
     total_expenses = serializers.SerializerMethodField()
     remaining_budget = serializers.SerializerMethodField()
     burn_rate = serializers.SerializerMethodField()
@@ -12,13 +14,25 @@ class DongSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Dong
-        fields = ['id', 'title', 'members', 'total_budget', 'total_expenses', 'remaining_budget', 'burn_rate', 'budget_forecast']
+        fields = [
+            "id",
+            "title",
+            "members",
+            "total_budget",
+            "total_expenses",
+            "remaining_budget",
+            "burn_rate",
+            "budget_forecast",
+        ]
 
     def get_members(self, obj):
         # 'obj' is the Dong instance.
         # obj.members.all() gets all related DongMember objects.
         # We create a list of just their names.
-        return [{"id": member.id, "name": member.name} for member in obj.members.all()]
+        return [
+            {"id": member.id, "name": member.name}
+            for member in obj.members.all()
+        ]
 
     def get_total_expenses(self, obj):
         """محاسبه مجموع خرج‌ها"""
@@ -44,14 +58,13 @@ class DongMemberSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = DongMember
-        fields = ['dong', 'name']
-
+        fields = ["dong", "name"]
 
 
 class DongMemberSerializerForExpense(serializers.ModelSerializer):
     class Meta:
         model = DongMember
-        fields = ['id', 'name']
+        fields = ["id", "name"]
 
 
 class ExpenseListSerializer(serializers.ModelSerializer):
@@ -62,9 +75,17 @@ class ExpenseListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expense
         fields = [
-            'id', 'title', 'amount', 'quantity', 'tax_percentage',
-            'include_tax', 'total_amount', 'paid_by', 'participants',
-            'expense_type', 'created_at'
+            "id",
+            "title",
+            "amount",
+            "quantity",
+            "tax_percentage",
+            "include_tax",
+            "total_amount",
+            "paid_by",
+            "participants",
+            "expense_type",
+            "created_at",
         ]
 
     def get_participants(self, obj):
@@ -75,55 +96,74 @@ class ExpenseListSerializer(serializers.ModelSerializer):
 
 
 class ExpenseUpdateSerializer(serializers.ModelSerializer):
-    paid_by = serializers.PrimaryKeyRelatedField(queryset=DongMember.objects.all())
+    paid_by = serializers.PrimaryKeyRelatedField(
+        queryset=DongMember.objects.all()
+    )
     participants = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset=DongMember.objects.all(),
-        required=False
+        many=True, queryset=DongMember.objects.all(), required=False
     )
 
     class Meta:
         model = Expense
         fields = [
-            'title', 'amount', 'paid_by', 'expense_type',
-            'quantity', 'tax_percentage', 'include_tax', 'participants'
+            "title",
+            "amount",
+            "paid_by",
+            "expense_type",
+            "quantity",
+            "tax_percentage",
+            "include_tax",
+            "participants",
         ]
 
     def validate_paid_by(self, value):
         dong = self.instance.dong
         if value.dong != dong:
-            raise serializers.ValidationError("Paid by member must belong to the same dong.")
+            raise serializers.ValidationError(
+                "Paid by member must belong to the same dong."
+            )
         return value
 
     def validate_participants(self, value):
         dong = self.instance.dong
         for member in value:
             if member.dong != dong:
-                raise serializers.ValidationError(f"Participant {member.name} does not belong to the same dong.")
+                raise serializers.ValidationError(
+                    f"Participant {member.name} does not belong to the same dong."
+                )
         return value
 
 
 class ExpenseCreateSerializer(serializers.ModelSerializer):
-    paid_by = serializers.PrimaryKeyRelatedField(queryset=DongMember.objects.all())
-    participants = serializers.PrimaryKeyRelatedField(
-        many=True,
+    paid_by = serializers.PrimaryKeyRelatedField(
         queryset=DongMember.objects.all()
     )
-    paid_by = serializers.PrimaryKeyRelatedField(queryset=DongMember.objects.all())
+    participants = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=DongMember.objects.all()
+    )
+    paid_by = serializers.PrimaryKeyRelatedField(
+        queryset=DongMember.objects.all()
+    )
 
     class Meta:
         model = Expense
         fields = [
-            'title', 'amount', 'paid_by', 'participants',
-            'expense_type', 'quantity', 'tax_percentage', 'include_tax'
+            "title",
+            "amount",
+            "paid_by",
+            "participants",
+            "expense_type",
+            "quantity",
+            "tax_percentage",
+            "include_tax",
         ]
 
     def validate(self, data):
-        dong_id = self.context.get('dong_id')
-        paid_by = data.get('paid_by')
-        participants = data.get('participants', [])
-        expense_type = data.get('expense_type', 'total')
-        quantity = data.get('quantity', 1)
+        dong_id = self.context.get("dong_id")
+        paid_by = data.get("paid_by")
+        participants = data.get("participants", [])
+        expense_type = data.get("expense_type", "total")
+        quantity = data.get("quantity", 1)
 
         if paid_by.dong_id != dong_id:
             raise serializers.ValidationError(
@@ -136,15 +176,13 @@ class ExpenseCreateSerializer(serializers.ModelSerializer):
                     f"{member.name} عضو این گروه نیست!"
                 )
 
-        if expense_type == 'individual' and len(participants) == 0:
+        if expense_type == "individual" and len(participants) == 0:
             raise serializers.ValidationError(
                 "In Individual Expense type you must specify at least one participant"
             )
 
         if quantity < 1:
-            raise serializers.ValidationError(
-                "quantity must be at least 1!"
-            )
+            raise serializers.ValidationError("quantity must be at least 1!")
 
         return data
 
@@ -153,4 +191,4 @@ class ExpenseParticipantSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ExpenseParticipant
-        fields = ['expense', 'member']
+        fields = ["expense", "member"]
