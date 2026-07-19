@@ -101,6 +101,8 @@ Add a few screenshots here so recruiters/visitors get a quick feel for the app, 
 
 Put the images in a `docs/screenshots/` folder in the repo and update the paths above.
 -->
+![](docs/screenshots/1.png)
+![](docs/screenshots/2.png)
 
 ## Roadmap
 
@@ -111,4 +113,4 @@ Put the images in a `docs/screenshots/` folder in the repo and update the paths 
 
 ## License
 
-Add a license of your choice (MIT is a common default for personal projects).<img width="617" height="881" alt="1 " src="https://github.com/user-attachments/assets/c7db5235-046d-424f-a6a8-5d5a9f428b1a" />
+Add a license of your choice (MIT is a common default for personal projects)
