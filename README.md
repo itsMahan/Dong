@@ -101,8 +101,8 @@ Add a few screenshots here so recruiters/visitors get a quick feel for the app, 
 
 Put the images in a `docs/screenshots/` folder in the repo and update the paths above.
 -->
-![](docs/screenshots/1.png)
-![](docs/screenshots/2.png)
+![](docs/Screenshots/1.png)
+![](docs/Screenshots/2.png)
 
 ## Roadmap
 
