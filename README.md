@@ -103,6 +103,20 @@ Put the images in a `docs/screenshots/` folder in the repo and update the paths 
 -->
 ![](docs/Screenshots/1.png)
 ![](docs/Screenshots/2.png)
+![](docs/Screenshots/3.png)
+![](docs/Screenshots/4.png)
+![](docs/Screenshots/5.png)
+![](docs/Screenshots/6.png)
+![](docs/Screenshots/7.png)
+![](docs/Screenshots/8.png)
+![](docs/Screenshots/9.png)
+![](docs/Screenshots/10.png)
+![](docs/Screenshots/11.png)
+![](docs/Screenshots/12.png)
+![](docs/Screenshots/13.png)
+![](docs/Screenshots/14.png)
+![](docs/Screenshots/15.png)
+![](docs/Screenshots/16.png)
 
 ## Roadmap
 
